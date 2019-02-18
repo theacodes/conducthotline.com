@@ -35,3 +35,10 @@ def serve(session):
     # Workaround for https://github.com/pallets/werkzeug/issues/461
     env = {"PYTHONPATH": os.getcwd()}
     session.run("python", "-m", "hotline", env=env)
+
+
+@nox.session(python="3.6")
+def shell(session):
+    session.install("-r", "requirements.txt")
+    session.install("ipython")
+    session.run("ipython")

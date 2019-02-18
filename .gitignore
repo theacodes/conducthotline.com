@@ -70,3 +70,6 @@ target/
 
 # pyenv
 .python-version
+
+# secrets
+secrets.json

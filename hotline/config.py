@@ -12,28 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import Flask
+"""Configures dependency injection across the application."""
 
-app = Flask(__name__)
+import json
 
-
-# Add a default root route.
-@app.route("/")
-def index():
-    return "Hello"
+from hotline import injector, utils
 
 
-@app.errorhandler(500)
-def server_error(e):
-    """TODO: Disable in production."""
-    return (
-        """
-    An internal error occurred: <pre>{}</pre>
-    See logs for full stacktrace.
-    """.format(
-            e
-        ),
-        500,
-    )
+def test_config():
+    with open("secrets.json") as fh:
+        secrets = utils.flatten_dict(json.load(fh), ancestors=["secrets"])
 
-    return app
+    for key, value in secrets.items():
+        injector.set(key, value)
+
+
+# by default, use test config on import.
+test_config()
