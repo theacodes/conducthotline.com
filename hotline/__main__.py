@@ -14,6 +14,7 @@
 
 import logging
 
+from hotline import config
 from hotline import app
 
 # This is only used when running locally. When running live, gunicorn runs

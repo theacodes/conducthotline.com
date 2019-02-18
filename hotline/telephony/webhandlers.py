@@ -14,30 +14,18 @@
 
 import flask
 
-import hotline.telephony.webhandlers
+from hotline import injector
 
 
-app = flask.Flask(__name__)
-app.register_blueprint(hotline.telephony.webhandlers.blueprint)
+blueprint = flask.Blueprint('telephony', __name__)
 
 
-# Add a default root route.
-@app.route("/")
-def index():
-    return "Hello"
+@blueprint.route("/event/inbound-sms", methods=["POST"])
+@injector.needs("secrets.virtual_number")
+def inbound_sms(virtual_number):
+    # TODO: Probably validate this.
+    message = flask.request.get_json()
 
+    print(message)
 
-@app.errorhandler(500)
-def server_error(e):
-    """TODO: Disable in production."""
-    return (
-        """
-    An internal error occurred: <pre>{}</pre>
-    See logs for full stacktrace.
-    """.format(
-            e
-        ),
-        500,
-    )
-
-    return app
+    return "", 204

@@ -64,7 +64,3 @@ def send_sms(sender: str, to: str, message: str, client: nexmo.Client) -> dict:
         raise nexmo.ClientError(error_text)
 
     return resp
-
-
-def parse_sms():
-    pass
