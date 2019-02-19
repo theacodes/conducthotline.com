@@ -1,3 +1,4 @@
 flask
 nexmo
-sqlalchemy
+peewee
+firebase-admin

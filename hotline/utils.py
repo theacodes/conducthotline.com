@@ -17,7 +17,7 @@
 from typing import List
 
 
-def flatten_dict(source: dict, ancestors: List[str] = None) -> dict:
+def flatten_dict(source: dict, ancestors: List[str] = None, max_depth=None) -> dict:
     """Flattens a nested dictionary.
 
     This::
@@ -44,7 +44,7 @@ def flatten_dict(source: dict, ancestors: List[str] = None) -> dict:
     for key, value in source.items():
         key_parts = ancestors + [key]
         stem = ".".join(key_parts)
-        if isinstance(value, dict):
+        if isinstance(value, dict) and (max_depth is None or len(ancestors) < max_depth):
             destination.update(flatten_dict(value, ancestors=key_parts))
         else:
             destination[stem] = value

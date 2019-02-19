@@ -21,7 +21,7 @@ from hotline import injector, utils
 
 def test_config():
     with open("secrets.json") as fh:
-        secrets = utils.flatten_dict(json.load(fh), ancestors=["secrets"])
+        secrets = utils.flatten_dict(json.load(fh), ancestors=["secrets"], max_depth=1)
 
     for key, value in secrets.items():
         injector.set(key, value)
