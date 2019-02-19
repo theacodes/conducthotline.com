@@ -15,9 +15,9 @@
 import flask
 
 from hotline import injector
+from hotline.database import highlevel as db
 
-
-blueprint = flask.Blueprint('telephony', __name__)
+blueprint = flask.Blueprint("telephony", __name__)
 
 
 @blueprint.route("/event/inbound-sms", methods=["POST"])
@@ -25,7 +25,18 @@ blueprint = flask.Blueprint('telephony', __name__)
 def inbound_sms(virtual_number):
     # TODO: Probably validate this.
     message = flask.request.get_json()
+    user_number = message["msisdn"]
+    relay_number = message["to"]
+    message_text = message["text"]
 
-    print(message)
+    room = db.find_room_for_user(
+        user_number=user_number, relay_number=relay_number
+    )
+
+    if not room:
+        print("Uh oh, no room found for message: ", message)
+        return "", 204
+
+    room.relay(user_number, message_text)
 
     return "", 204

@@ -12,31 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import flask
-
-import hotline.telephony.webhandlers
-
-app = flask.Flask(__name__)
-app.register_blueprint(hotline.telephony.webhandlers.blueprint)
-
-
-# Add a default root route.
-@app.route("/")
-def index():
-    return "Hello"
-
-
-@app.errorhandler(500)
-def server_error(e):
-    """TODO: Disable in production."""
-    return (
-        """
-    An internal error occurred: <pre>{}</pre>
-    See logs for full stacktrace.
-    """.format(
-            e
-        ),
-        500,
-    )
-
-    return app
+from hotline.database.highlevel import *

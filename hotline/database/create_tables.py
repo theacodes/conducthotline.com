@@ -12,31 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import flask
+"""Recreates database tables / does migrations."""
 
-import hotline.telephony.webhandlers
-
-app = flask.Flask(__name__)
-app.register_blueprint(hotline.telephony.webhandlers.blueprint)
+from hotline.database import lowlevel
 
 
-# Add a default root route.
-@app.route("/")
-def index():
-    return "Hello"
+def create_tables():
+    with lowlevel.db:
+        lowlevel.db.drop_tables([lowlevel.Chatroom, lowlevel.ChatroomConnection])
+        lowlevel.db.create_tables([lowlevel.Chatroom, lowlevel.ChatroomConnection])
 
 
-@app.errorhandler(500)
-def server_error(e):
-    """TODO: Disable in production."""
-    return (
-        """
-    An internal error occurred: <pre>{}</pre>
-    See logs for full stacktrace.
-    """.format(
-            e
-        ),
-        500,
-    )
-
-    return app
+if __name__ == "__main__":
+    create_tables()

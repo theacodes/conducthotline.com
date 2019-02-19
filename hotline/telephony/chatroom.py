@@ -24,6 +24,7 @@ Bob receives a message from 3456 that says "Alice: Hello",
 Sandy recieves a message from 6789 that says "Alice: "Hello".
 """
 
+import json
 from collections import namedtuple
 
 from hotline.telephony import lowlevel
@@ -31,16 +32,18 @@ from hotline.telephony import lowlevel
 _User = namedtuple("_User", ["name", "number", "relay"])
 
 
-class ChatRoom:
+class Chatroom:
     def __init__(self):
         self._users = {}
 
     def add_user(self, name: str, user_number: str, relay_number: str):
         self._users[user_number] = _User(
-            name=name,
-            number=user_number,
-            relay=relay_number
+            name=name, number=user_number, relay=relay_number
         )
+
+    @property
+    def users(self):
+        return self._users.values()
 
     def relay(self, user_number: str, message: str):
         sender = self._users[user_number]
@@ -51,6 +54,22 @@ class ChatRoom:
             if user == sender:
                 continue
 
-            resp = lowlevel.send_sms(
-                sender=user.relay, to=user.number, message=message)
+            resp = lowlevel.send_sms(sender=user.relay, to=user.number, message=message)
             print(resp)
+
+    def __str__(self) -> str:
+        users = [user.name for user in self._users.values()]
+        return f"<Chatroom users=[{', '.join(users)}]>"
+
+    def serialize(self) -> str:
+        return json.dumps({"__class__": self.__class__.__name__, "_users": self._users})
+
+    @classmethod
+    def deserialize(cls, data: str):
+        loaded_data = json.loads(data)
+        instance = cls()
+        instance._users = {
+            key: _User(*value) for key, value in loaded_data["_users"].items()
+        }
+
+        return instance
