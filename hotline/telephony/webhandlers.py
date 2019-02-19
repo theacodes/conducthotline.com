@@ -29,14 +29,13 @@ def inbound_sms(virtual_number):
     relay_number = message["to"]
     message_text = message["text"]
 
-    room = db.find_room_for_user(
-        user_number=user_number, relay_number=relay_number
-    )
+    room = db.find_room_for_user(user_number=user_number, relay_number=relay_number)
 
     if not room:
         print("Uh oh, no room found for message: ", message)
         return "", 204
 
+    print(room)
     room.relay(user_number, message_text)
 
     return "", 204

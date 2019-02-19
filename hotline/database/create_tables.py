@@ -16,11 +16,18 @@
 
 from hotline.database import lowlevel
 
+models = [
+    lowlevel.Number,
+    lowlevel.Event,
+    lowlevel.Chatroom,
+    lowlevel.ChatroomConnection,
+]
+
 
 def create_tables():
     with lowlevel.db:
-        lowlevel.db.drop_tables([lowlevel.Chatroom, lowlevel.ChatroomConnection])
-        lowlevel.db.create_tables([lowlevel.Chatroom, lowlevel.ChatroomConnection])
+        lowlevel.db.drop_tables(models)
+        lowlevel.db.create_tables(models)
 
 
 if __name__ == "__main__":

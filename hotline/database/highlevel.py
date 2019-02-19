@@ -22,9 +22,9 @@ import hotline.telephony.chatroom
 from hotline.database import lowlevel
 
 
-def save_room(room: hotline.telephony.chatroom.Chatroom):
+def _save_room(room: hotline.telephony.chatroom.Chatroom, event: lowlevel.Event):
     with lowlevel.db.atomic():
-        room_row = lowlevel.Chatroom.create(event_name="test", room=room)
+        room_row = lowlevel.Chatroom.create(event=event, room=room)
 
         for connection in room.users:
             lowlevel.ChatroomConnection.create(
@@ -33,6 +33,50 @@ def save_room(room: hotline.telephony.chatroom.Chatroom):
                 user_name=connection.name,
                 chatroom=room_row,
             )
+
+
+def create_room(
+    event_number: str, reporter_number: str
+) -> hotline.telephony.chatroom.Chatroom:
+    """Creates a room for the event with the given primary number.
+
+    The alogrithm is a little tricky here. The event organizers can not use
+    the primary number as the chat relay for this chat, so a new number must be
+    used.
+    """
+    # Find the event.
+    event = lowlevel.Event.get(lowlevel.Event.primary_number == event_number)
+
+    # Create a chatroom
+    chatroom = hotline.telephony.chatroom.Chatroom()
+    chatroom.add_user(
+        name="Reporter", user_number=reporter_number, relay_number=event_number
+    )
+
+    # Find all organizers.
+    # TODO
+    organizers = [("Thea", "16785888466")]
+
+    # Find an unused number to use for the organizers' relay.
+    # Use the first organizer's number here, as all organizers should be
+    # assigned the same relay anyway.
+    organizer_number = organizers[0][1]
+    relay_number = lowlevel.find_unused_relay_number(
+        event.primary_number, organizer_number
+    )
+
+    print("Relay number", relay_number)
+
+    # Now add the organizers and their relay.
+    for organizer in organizers:
+        chatroom.add_user(
+            name=organizer[0], user_number=organizer[1], relay_number=relay_number
+        )
+
+    print(chatroom.serialize())
+
+    # Save the chatroom.
+    return _save_room(chatroom, event=event)
 
 
 def find_room_for_user(

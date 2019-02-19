@@ -39,8 +39,18 @@ class SerializableField(peewee.TextField):
         return self._cls.deserialize(value)
 
 
+class Number(BaseModel):
+    number = peewee.TextField()
+
+
+class Event(BaseModel):
+    name = peewee.TextField()
+    # TODO: Lots of stuff. Owner, etc.
+    primary_number = peewee.TextField()
+
+
 class Chatroom(BaseModel):
-    event_name = peewee.TextField()
+    event = peewee.ForeignKeyField(Event)
     room = SerializableField(hotline.telephony.chatroom.Chatroom)
 
 
@@ -52,3 +62,24 @@ class ChatroomConnection(BaseModel):
 
     class Meta:
         primary_key = peewee.CompositeKey("user_number", "relay_number")
+
+
+def find_unused_relay_number(event_number, organizer_number):
+    """Find a relay number that isn't currently used by an existing chatroom
+    connection."""
+    used_relay_numbers = ChatroomConnection.select(
+        ChatroomConnection.relay_number
+    ).where(ChatroomConnection.user_number == organizer_number)
+    print(list(used_relay_numbers))
+    unused_number_query = (
+        Number.select(Number.number)
+        .where(Number.number.not_in(used_relay_numbers) & Number != event_number)
+        .limit(1)
+    )
+
+    numbers = [row.number for row in unused_number_query]
+
+    if not numbers:
+        return None
+    else:
+        return numbers[0]
