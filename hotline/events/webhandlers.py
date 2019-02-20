@@ -13,12 +13,15 @@
 # limitations under the License.
 
 import flask
+
+from hotline.auth import auth_required
 from hotline.database import highlevel as db
 
 blueprint = flask.Blueprint("events", __name__, template_folder="templates")
 
 
 @blueprint.route("/events")
+@auth_required
 def list_events():
     events = db.list_events()
     return flask.render_template("list.html", events=events)
