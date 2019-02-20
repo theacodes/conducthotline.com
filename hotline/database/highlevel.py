@@ -21,6 +21,13 @@ import peewee
 from hotline.database import lowlevel
 
 
+def list_events(user_id: str = None):
+    with lowlevel.db:
+        query = lowlevel.Event.select().order_by(lowlevel.Event.name)
+        # TODO: User query.
+        yield from query
+
+
 def _save_room(room: hotline.telephony.chatroom.Chatroom, event: lowlevel.Event):
     with lowlevel.db.atomic():
         room_row = lowlevel.Chatroom.create(event=event, room=room)

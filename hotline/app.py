@@ -15,10 +15,12 @@
 import flask
 import hotline.auth.webhandlers
 import hotline.telephony.webhandlers
+import hotline.events.webhandlers
 
 app = flask.Flask(__name__)
 app.register_blueprint(hotline.telephony.webhandlers.blueprint)
 app.register_blueprint(hotline.auth.webhandlers.blueprint)
+app.register_blueprint(hotline.events.webhandlers.blueprint)
 
 
 # Add a default root route.
