@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import flask
-
 from hotline.auth import auth_required
 from hotline.database import highlevel as db
 from hotline.events import forms

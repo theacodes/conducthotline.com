@@ -16,14 +16,17 @@
 
 from typing import Optional
 
-import peewee
-
 import hotline.telephony.chatroom
+import peewee
 from hotline.database import lowlevel
 
 
 def list_events(user_id: str):
-    query = lowlevel.Event.select().where(lowlevel.Event.owner_user_id == user_id).order_by(lowlevel.Event.name)
+    query = (
+        lowlevel.Event.select()
+        .where(lowlevel.Event.owner_user_id == user_id)
+        .order_by(lowlevel.Event.name)
+    )
     yield from query
 
 

@@ -15,9 +15,8 @@
 """Low-level database primitives. Moved here to prevent bleeding db-specific
 stuff into the higher-level interface."""
 
-import peewee
-
 import hotline.telephony.chatroom
+import peewee
 
 db = peewee.SqliteDatabase("hotline.db")
 

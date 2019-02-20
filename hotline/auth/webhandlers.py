@@ -19,7 +19,6 @@ import firebase_admin
 import firebase_admin.auth
 import firebase_admin.credentials
 import flask
-
 from hotline import injector
 
 _COOKIE_NAME = "auth-session"
