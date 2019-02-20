@@ -19,7 +19,7 @@ from hotline.database import highlevel as db
 blueprint = flask.Blueprint("telephony", __name__)
 
 
-@blueprint.route("/event/inbound-sms", methods=["POST"])
+@blueprint.route("/telephony/inbound-sms", methods=["POST"])
 @injector.needs("secrets.virtual_number")
 def inbound_sms(virtual_number):
     # TODO: Probably validate this.
