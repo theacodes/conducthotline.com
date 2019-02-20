@@ -63,4 +63,6 @@ def send_sms(sender: str, to: str, message: str, client: nexmo.Client) -> dict:
     if error_text:
         raise nexmo.ClientError(error_text)
 
+    import time; time.sleep(2)
+
     return resp
