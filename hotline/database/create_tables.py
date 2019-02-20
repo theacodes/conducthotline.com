@@ -19,6 +19,7 @@ from hotline.database import lowlevel
 models = [
     lowlevel.Number,
     lowlevel.Event,
+    lowlevel.EventMember,
     lowlevel.Chatroom,
     lowlevel.ChatroomConnection,
 ]

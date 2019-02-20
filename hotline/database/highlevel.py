@@ -22,16 +22,32 @@ import hotline.telephony.chatroom
 from hotline.database import lowlevel
 
 
-def list_events(user_id: str = None):
-    with lowlevel.db:
-        query = lowlevel.Event.select().order_by(lowlevel.Event.name)
-        # TODO: User query.
-        yield from query
+def list_events(user_id: str):
+    query = lowlevel.Event.select().order_by(lowlevel.Event.name)
+    # TODO: User query.
+    yield from query
 
 
-def get_event(event_slug: str = None):
-    with lowlevel.db:
-        return lowlevel.Event.get(lowlevel.Event.slug == event_slug)
+def get_event(event_slug: str):
+    return lowlevel.Event.get(lowlevel.Event.slug == event_slug)
+
+
+def get_event_members(event):
+    query = event.members
+    yield from query
+
+
+def new_event_member(event_slug: str):
+    member = lowlevel.EventMember()
+    member.event = get_event(event_slug)
+    member.verified = False
+    return member
+
+
+def remove_event_member(event_slug: str, member_id):
+    lowlevel.EventMember.get(
+        lowlevel.EventMember.id == int(member_id)
+    ).delete_instance()
 
 
 def acquire_number(event_slug: str = None):

@@ -60,6 +60,13 @@ class Event(BaseModel):
     location = peewee.TextField(null=True, index=False)
 
 
+class EventMember(BaseModel):
+    event = peewee.ForeignKeyField(Event, backref="members")
+    name = peewee.TextField()
+    number = peewee.TextField()
+    verified = peewee.BooleanField()
+
+
 class Chatroom(BaseModel):
     event = peewee.ForeignKeyField(Event)
     room = SerializableField(hotline.telephony.chatroom.Chatroom)

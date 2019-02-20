@@ -45,7 +45,26 @@ def details(event_slug):
 @auth_required
 def numbers(event_slug):
     event = db.get_event(event_slug)
-    return flask.render_template("numbers.html", event=event)
+    members = db.get_event_members(event)
+    form = forms.AddMemberForm()
+    return flask.render_template(
+        "numbers.html", event=event, members=members, form=form
+    )
+
+
+@blueprint.route("/events/<event_slug>/members", methods=["POST"])
+def add_member(event_slug):
+    form = forms.AddMemberForm(flask.request.form)
+    member = db.new_event_member(event_slug)
+    form.populate_obj(member)
+    member.save()
+    return flask.redirect(flask.url_for(".numbers", event_slug=event_slug))
+
+
+@blueprint.route("/events/<event_slug>/members/remove/<member_id>")
+def remove_member(event_slug, member_id):
+    db.remove_event_member(event_slug, member_id)
+    return flask.redirect(flask.url_for(".numbers", event_slug=event_slug))
 
 
 @blueprint.route("/events/<event_slug>/organizers", methods=["GET", "POST"])

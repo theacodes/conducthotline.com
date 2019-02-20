@@ -28,3 +28,10 @@ class EventEditForm(wtforms.Form):
     website = wtforms.StringField()
     contact_email = wtforms.StringField()
     location = wtforms.StringField()
+
+
+class AddMemberForm(wtforms.Form):
+    name = wtforms.StringField("Name", validators=[wtforms.validators.InputRequired()])
+    number = wtforms.StringField(
+        "Number", validators=[wtforms.validators.InputRequired()]
+    )

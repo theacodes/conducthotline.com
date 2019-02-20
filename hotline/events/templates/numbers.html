@@ -10,7 +10,9 @@
     <li><a href="{{url_for('.organizers', event_slug=event.slug)}}">Organizers</a></li>
   </ul>
 </div>
+{% endblock %}
 
+{% block extra_sections %}
 {% if event.primary_number %}
 <section class="hero is-primary">
   <div class="hero-body">
@@ -52,12 +54,70 @@
 </section>
 {% endif %}
 
-
-<form method="POST">
-  <div class="field is-grouped">
-    <div class="control">
-      <button class="button is-primary" type="submit">Save</button>
-    </div>
+<section class="section">
+  <div class="container">
+    <h2 class="title">Hotline members</h2>
+    <h3 class="subtitle">These people are contacted when a person calls or texts the hotline.</h3>
+    <table class="table is-fullwidth is-striped is-hoverable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Number</th>
+          <th>Verified</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for member in members %}
+        <tr>
+          <td>{{member.name|e}}</td>
+          <td>{{member.number|e}}</td>
+          <th>{{member.verified}}</th>
+          <th class="is-pulled-right">
+            <a class="button is-danger" href="{{url_for('.remove_member', event_slug=event.slug, member_id=member.id)}}">Remove</a>
+          </th>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-</form>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="title">Add member</h2>
+    <h3 class="subtitle">Members must verify their number before the hotline will contact them.</h3>
+
+    <form method="POST" action="{{url_for('.add_member', event_slug=event.slug)}}">
+      {% for field in form %}
+        <div class="field">
+          <label class="label">{{ field.label() }}</label>
+          <div class="control">
+            {{ field(class="input") }}
+          </div>
+          {% if field.description %}
+            <p class="help">
+                {{field.description}}
+            </p>
+          {% endif %}
+          {% if field.errors %}
+            <p class="help is-danger">
+              {% for error in field.errors %}
+                {{ error|e }}<br/>
+              {% endfor %}
+            </p>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+
+      <div class="field is-grouped">
+        <div class="control">
+          <button class="button is-primary" type="submit">Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+
 {% endblock %}
