@@ -29,6 +29,20 @@ def list():
     return flask.render_template("list.html", events=events)
 
 
+@blueprint.route("/events/add", methods=["GET", "POST"])
+@auth_required
+def add():
+    form = forms.EventEditForm(flask.request.form)
+
+    if flask.request.method == "POST" and form.validate():
+        event = db.new_event(user_id=None)
+        form.populate_obj(event)
+        event.save()
+        return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
+
+    return flask.render_template("add.html", form=form)
+
+
 @blueprint.route("/events/<event_slug>/details", methods=["GET", "POST"])
 @auth_required
 def details(event_slug):

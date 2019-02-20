@@ -28,6 +28,12 @@ def list_events(user_id: str):
     yield from query
 
 
+def new_event(user_id: str):
+    # TODO: User ID stuff.
+    event = lowlevel.Event()
+    return event
+
+
 def get_event(event_slug: str):
     return lowlevel.Event.get(lowlevel.Event.slug == event_slug)
 

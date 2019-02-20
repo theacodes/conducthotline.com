@@ -73,7 +73,7 @@
           <td>{{member.name|e}}</td>
           <td>{{member.number|e}}</td>
           <th>{{member.verified}}</th>
-          <th class="is-pulled-right">
+          <th class="has-text-right">
             <a class="button is-danger" href="{{url_for('.remove_member', event_slug=event.slug, member_id=member.id)}}">Remove</a>
           </th>
         </tr>
