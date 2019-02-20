@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block title %}Events{% endblock %}
+
+{% block content %}
+<table class="table is-fullwidth is-striped is-hoverable">
+  <thead>
+    <tr>
+      <th>Event</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for event in events %}
+    <tr>
+      <td>{{event.name}}</td>
+      <td>Manage</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
