@@ -23,14 +23,13 @@ from hotline.database import lowlevel
 
 
 def list_events(user_id: str):
-    query = lowlevel.Event.select().order_by(lowlevel.Event.name)
-    # TODO: User query.
+    query = lowlevel.Event.select().where(lowlevel.Event.owner_user_id == user_id).order_by(lowlevel.Event.name)
     yield from query
 
 
 def new_event(user_id: str):
-    # TODO: User ID stuff.
     event = lowlevel.Event()
+    event.owner_user_id = user_id
     return event
 
 

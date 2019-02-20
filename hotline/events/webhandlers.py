@@ -24,18 +24,19 @@ blueprint = flask.Blueprint("events", __name__, template_folder="templates")
 @blueprint.route("/events")
 @auth_required
 def list():
-    # TODO: Write up user ID.
-    events = db.list_events(user_id=None)
+    user_id = flask.g.user["user_id"]
+    events = db.list_events(user_id=user_id)
     return flask.render_template("list.html", events=events)
 
 
 @blueprint.route("/events/add", methods=["GET", "POST"])
 @auth_required
 def add():
+    user_id = flask.g.user["user_id"]
     form = forms.EventEditForm(flask.request.form)
 
     if flask.request.method == "POST" and form.validate():
-        event = db.new_event(user_id=None)
+        event = db.new_event(user_id=user_id)
         form.populate_obj(event)
         event.save()
         return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
@@ -43,10 +44,17 @@ def add():
     return flask.render_template("add.html", form=form)
 
 
+def _verify_access(event):
+    user_id = flask.g.user["user_id"]
+    if event.owner_user_id != user_id:
+        flask.abort(403)
+
+
 @blueprint.route("/events/<event_slug>/details", methods=["GET", "POST"])
 @auth_required
 def details(event_slug):
     event = db.get_event(event_slug)
+    _verify_access(event)
     form = forms.EventEditForm(flask.request.form, event)
 
     if flask.request.method == "POST" and form.validate():
@@ -60,6 +68,7 @@ def details(event_slug):
 @auth_required
 def numbers(event_slug):
     event = db.get_event(event_slug)
+    _verify_access(event)
     members = db.get_event_members(event)
     form = forms.AddMemberForm()
     return flask.render_template(
@@ -69,6 +78,7 @@ def numbers(event_slug):
 
 @blueprint.route("/events/<event_slug>/members", methods=["POST"])
 def add_member(event_slug):
+    _verify_access(db.get_event(event_slug))
     form = forms.AddMemberForm(flask.request.form)
     member = db.new_event_member(event_slug)
     form.populate_obj(member)
@@ -78,15 +88,9 @@ def add_member(event_slug):
 
 @blueprint.route("/events/<event_slug>/members/remove/<member_id>")
 def remove_member(event_slug, member_id):
+    _verify_access(db.get_event(event_slug))
     db.remove_event_member(event_slug, member_id)
     return flask.redirect(flask.url_for(".numbers", event_slug=event_slug))
-
-
-@blueprint.route("/events/<event_slug>/organizers", methods=["GET", "POST"])
-@auth_required
-def organizers(event_slug):
-    event = db.get_event(event_slug)
-    return flask.render_template("organizers.html", event=event)
 
 
 @blueprint.route("/events/<event_slug>/release")

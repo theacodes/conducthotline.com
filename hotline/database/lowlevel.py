@@ -47,6 +47,7 @@ class Event(BaseModel):
     # Always required stuff.
     name = peewee.TextField()
     slug = peewee.CharField(unique=True)
+    owner_user_id = peewee.CharField()
 
     # Number assignement.
     # Stored as destructured as well to speed things up a little.
