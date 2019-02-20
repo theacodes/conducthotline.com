@@ -24,7 +24,8 @@ blueprint = flask.Blueprint("events", __name__, template_folder="templates")
 @blueprint.route("/events")
 @auth_required
 def list():
-    events = db.list_events()
+    # TODO: Write up user ID.
+    events = db.list_events(user_id=None)
     return flask.render_template("list.html", events=events)
 
 

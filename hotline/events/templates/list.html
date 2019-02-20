@@ -14,7 +14,9 @@
     {% for event in events %}
     <tr>
       <td>{{event.name}}</td>
-      <td class="is-pulled-right">Manage</td>
+      <td class="is-pulled-right">
+        <a class="button is-primary" href="{{url_for('.details', event_slug=event.slug)}}">Manage</a>
+      </td>
     </tr>
     {% endfor %}
   </tbody>
