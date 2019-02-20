@@ -23,14 +23,14 @@ blueprint = flask.Blueprint("events", __name__, template_folder="templates")
 
 @blueprint.route("/events")
 @auth_required
-def list_events():
+def list():
     events = db.list_events()
     return flask.render_template("list.html", events=events)
 
 
-@blueprint.route("/events/<event_slug>/edit", methods=["GET", "POST"])
+@blueprint.route("/events/<event_slug>/details", methods=["GET", "POST"])
 @auth_required
-def edit_event(event_slug):
+def details(event_slug):
     event = db.get_event(event_slug)
     form = forms.EventEditForm(flask.request.form, event)
 
@@ -39,3 +39,34 @@ def edit_event(event_slug):
         event.save()
 
     return flask.render_template("edit.html", event=event, form=form)
+
+
+@blueprint.route("/events/<event_slug>/numbers", methods=["GET", "POST"])
+@auth_required
+def numbers(event_slug):
+    event = db.get_event(event_slug)
+    return flask.render_template("numbers.html", event=event)
+
+
+@blueprint.route("/events/<event_slug>/organizers", methods=["GET", "POST"])
+@auth_required
+def organizers(event_slug):
+    event = db.get_event(event_slug)
+    return flask.render_template("organizers.html", event=event)
+
+
+@blueprint.route("/events/<event_slug>/release")
+@auth_required
+def release(event_slug):
+    event = db.get_event(event_slug)
+    event.primary_number = None
+    event.primary_number_id = None
+    event.save()
+    return flask.redirect(flask.url_for(".numbers", event_slug=event_slug))
+
+
+@blueprint.route("/events/<event_slug>/acquire")
+@auth_required
+def acquire(event_slug):
+    db.acquire_number(event_slug)
+    return flask.redirect(flask.url_for(".numbers", event_slug=event_slug))

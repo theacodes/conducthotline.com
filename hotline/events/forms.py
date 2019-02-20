@@ -17,11 +17,13 @@ import wtforms
 
 class EventEditForm(wtforms.Form):
     name = wtforms.StringField(
-        "Event name", validators=[wtforms.validators.InputRequired()])
+        "Event name", validators=[wtforms.validators.InputRequired()]
+    )
     slug = wtforms.StringField(
         "URL Slug",
         description="Used to generate a URL for your event. For example, https://conducthotline/pycascades",
-        validators=[wtforms.validators.InputRequired()])
+        validators=[wtforms.validators.InputRequired()],
+    )
     coc_link = wtforms.StringField()
     website = wtforms.StringField()
     contact_email = wtforms.StringField()

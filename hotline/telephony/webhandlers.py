@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import flask
+
 from hotline import injector
 from hotline.database import highlevel as db
 

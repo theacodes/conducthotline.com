@@ -13,9 +13,10 @@
 # limitations under the License.
 
 import flask
+
 import hotline.auth.webhandlers
-import hotline.telephony.webhandlers
 import hotline.events.webhandlers
+import hotline.telephony.webhandlers
 
 app = flask.Flask(__name__)
 app.register_blueprint(hotline.telephony.webhandlers.blueprint)

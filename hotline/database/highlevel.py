@@ -16,8 +16,9 @@
 
 from typing import Optional
 
-import hotline.telephony.chatroom
 import peewee
+
+import hotline.telephony.chatroom
 from hotline.database import lowlevel
 
 
@@ -29,8 +30,23 @@ def list_events(user_id: str = None):
 
 
 def get_event(event_slug: str = None):
-    # TODO: actually query
-    return lowlevel.Event.get()
+    with lowlevel.db:
+        return lowlevel.Event.get(lowlevel.Event.slug == event_slug)
+
+
+def acquire_number(event_slug: str = None):
+    with lowlevel.db.atomic():
+        event = lowlevel.Event.get(lowlevel.Event.slug == event_slug)
+        numbers = lowlevel.find_unused_event_numbers()
+
+        # TODO: Check for no available numbers
+        number = numbers[0]
+        event.primary_number = number.number
+        event.primary_number_id = number
+
+        event.save()
+
+        return event
 
 
 def _save_room(room: hotline.telephony.chatroom.Chatroom, event: lowlevel.Event):

@@ -3,6 +3,14 @@
 {% block title %}Managing {{event.name}}{% endblock %}
 
 {% block content %}
+<div class="tabs">
+  <ul>
+    <li class="is-active"><a href="{{url_for('.details', event_slug=event.slug)}}">Details</a></li>
+    <li><a href="{{url_for('.numbers', event_slug=event.slug)}}">Numbers</a></li>
+    <li><a href="{{url_for('.organizers', event_slug=event.slug)}}">Organizers</a></li>
+  </ul>
+</div>
+
 <form method="POST">
   {% for field in form %}
     <div class="field">

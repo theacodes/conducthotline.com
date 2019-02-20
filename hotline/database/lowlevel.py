@@ -15,8 +15,9 @@
 """Low-level database primitives. Moved here to prevent bleeding db-specific
 stuff into the higher-level interface."""
 
-import hotline.telephony.chatroom
 import peewee
+
+import hotline.telephony.chatroom
 
 db = peewee.SqliteDatabase("hotline.db")
 
@@ -72,6 +73,15 @@ class ChatroomConnection(BaseModel):
 
     class Meta:
         primary_key = peewee.CompositeKey("user_number", "relay_number")
+
+
+def find_unused_event_numbers():
+    return list(
+        Number.select()
+        .join(Event, peewee.JOIN.LEFT_OUTER, on=(Event.primary_number_id == Number.id))
+        .where(Event.primary_number_id.is_null())
+        .limit(5)
+    )
 
 
 def find_unused_relay_number(event_number, organizer_number):

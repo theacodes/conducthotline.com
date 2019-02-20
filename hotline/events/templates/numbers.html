@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block title %}Managing {{event.name}}{% endblock %}
+
+{% block content %}
+<div class="tabs">
+  <ul>
+    <li><a href="{{url_for('.details', event_slug=event.slug)}}">Details</a></li>
+    <li class="is-active"><a href="{{url_for('.numbers', event_slug=event.slug)}}">Numbers</a></li>
+    <li><a href="{{url_for('.organizers', event_slug=event.slug)}}">Organizers</a></li>
+  </ul>
+</div>
+
+{% if event.primary_number %}
+<section class="hero is-primary">
+  <div class="hero-body">
+    <div class="container">
+      <h1 class="title">
+        Your hotline is active. ✨
+      </h1>
+      <h2 class="subtitle">
+        Your hotline's number is <strong>{{event.primary_number}}</strong>.
+      </h2>
+      <p>
+        You may release your event's number if you not longer need it or need
+        another one. <strong>This is irreversible! You will likely not get the same number if you request a new one.</strong>
+      </p>
+      <p>
+        <a class="button is-danger" href="{{url_for('.release', event_slug=event.slug)}}">Release number</a>
+      </p>
+    </div>
+  </div>
+</section>
+{% else %}
+<section class="hero is-warning">
+  <div class="hero-body">
+    <div class="container">
+      <h1 class="title">
+        Your hotline doesn't yet have a number!
+      </h1>
+      <h2 class="subtitle">
+        You'll need to acquire a number before your attendees can use the hotline.
+      </h2>
+      <p>
+        We'll assign you a number automatically. Keep in mind these are not free, so please don't abuse this system.
+      </p>
+      <p>
+        <a class="button is-success" href="{{url_for('.acquire', event_slug=event.slug)}}">Acquire number</a>
+      </p>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+
+<form method="POST">
+  <div class="field is-grouped">
+    <div class="control">
+      <button class="button is-primary" type="submit">Save</button>
+    </div>
+  </div>
+</form>
+{% endblock %}
