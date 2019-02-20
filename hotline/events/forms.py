@@ -22,3 +22,7 @@ class EventEditForm(wtforms.Form):
         "URL Slug",
         description="Used to generate a URL for your event. For example, https://conducthotline/pycascades",
         validators=[wtforms.validators.InputRequired()])
+    coc_link = wtforms.StringField()
+    website = wtforms.StringField()
+    contact_email = wtforms.StringField()
+    location = wtforms.StringField()

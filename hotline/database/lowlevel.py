@@ -43,9 +43,20 @@ class Number(BaseModel):
 
 
 class Event(BaseModel):
+    # Always required stuff.
     name = peewee.TextField()
-    # TODO: Lots of stuff. Owner, etc.
-    primary_number = peewee.TextField()
+    slug = peewee.CharField(unique=True)
+
+    # Number assignement.
+    # Stored as destructured as well to speed things up a little.
+    primary_number = peewee.TextField(null=True)
+    primary_number_id = peewee.ForeignKeyField(Number, null=True)
+
+    # Information fields.
+    coc_link = peewee.TextField(null=True, index=False)
+    website = peewee.TextField(null=True, index=False)
+    contact_email = peewee.TextField(null=True, index=False)
+    location = peewee.TextField(null=True, index=False)
 
 
 class Chatroom(BaseModel):
