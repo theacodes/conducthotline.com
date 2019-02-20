@@ -16,15 +16,14 @@
 
 import json
 
-from hotline import injector, utils
+from hotline import injector
 
 
 def test_config():
     with open("secrets.json") as fh:
-        secrets = utils.flatten_dict(json.load(fh), ancestors=["secrets"], max_depth=1)
+        secrets = json.load(fh)
 
-    for key, value in secrets.items():
-        injector.set(key, value)
+    injector.set("secrets", secrets)
 
 
 # by default, use test config on import.

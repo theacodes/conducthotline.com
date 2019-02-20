@@ -14,6 +14,4 @@
 
 from hotline.auth.webhandlers import auth_required
 
-__all__ = [
-    "auth_required"
-]
+__all__ = ["auth_required"]

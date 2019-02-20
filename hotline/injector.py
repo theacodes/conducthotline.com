@@ -37,9 +37,19 @@ def set(name: str, value: Any):
 _default_sentinel = object()
 
 
+def _dot_get(name: str, container: dict):
+    print(name, container)
+    parts = name.split(".", 1)
+
+    if len(parts) > 1:
+        return _dot_get(parts[1], container[parts[0]])
+    else:
+        return container[parts[0]]
+
+
 def get(name: str, default=_default_sentinel):
     try:
-        value = _registry[name]
+        value = _dot_get(name, _registry)
 
         if callable(value):
             value = value()

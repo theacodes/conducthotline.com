@@ -19,7 +19,6 @@ import firebase_admin
 import firebase_admin.auth
 import firebase_admin.credentials
 import flask
-
 from hotline import injector
 
 _COOKIE_NAME = "auth-session"
@@ -27,14 +26,15 @@ _COOKIE_NAME = "auth-session"
 blueprint = flask.Blueprint("auth", __name__, template_folder="templates")
 
 
-@injector.provides(needs=["secrets.firebase_service_account"])
-def firebase_admin_app(firebase_service_account):
+@injector.provides(needs=["secrets.firebase.service_account"])
+def firebase_admin_app(service_account):
     try:
         return firebase_admin.get_app()
     except ValueError:
         pass
     return firebase_admin.initialize_app(
-        firebase_admin.credentials.Certificate(firebase_service_account))
+        firebase_admin.credentials.Certificate(service_account)
+    )
 
 
 def auth_required(f):
@@ -44,7 +44,8 @@ def auth_required(f):
         session_cookie = flask.request.cookies.get(_COOKIE_NAME)
         try:
             decoded_claims = firebase_admin.auth.verify_session_cookie(
-                session_cookie, check_revoked=True, app=firebase_admin_app)
+                session_cookie, check_revoked=True, app=firebase_admin_app
+            )
             flask.g.user = decoded_claims
             return f(*args, **kwargs)
         except ValueError:
@@ -58,15 +59,15 @@ def auth_required(f):
 
 
 @blueprint.route("/auth/login")
-@injector.needs("secrets.firebase_config")
-def login(firebase_config):
-    return flask.render_template("login.html", firebase_config=firebase_config)
+@injector.needs("secrets.firebase.config")
+def login(config):
+    return flask.render_template("login.html", firebase_config=config)
 
 
 @blueprint.route("/auth/token-login", methods=["POST"])
 @injector.needs("firebase_admin_app")
 def token_login(firebase_admin_app):
-    id_token = flask.request.headers["Authentication"].split(' ')[1]
+    id_token = flask.request.headers["Authentication"].split(" ")[1]
 
     # Set session expiration to 5 days.
     expires_in = datetime.timedelta(days=5)
@@ -74,13 +75,15 @@ def token_login(firebase_admin_app):
         # Create the session cookie. This will also verify the ID token in the process.
         # The session cookie will have the same claims as the ID token.
         session_cookie = firebase_admin.auth.create_session_cookie(
-            id_token, expires_in=expires_in, app=firebase_admin_app)
+            id_token, expires_in=expires_in, app=firebase_admin_app
+        )
         response = flask.Response(status="204")
 
         expires = datetime.datetime.now() + expires_in
         # TODO: Set secure to True. (or use Talisman)
         response.set_cookie(
-            _COOKIE_NAME, session_cookie, expires=expires, httponly=True, secure=False)
+            _COOKIE_NAME, session_cookie, expires=expires, httponly=True, secure=False
+        )
         return response
     except firebase_admin.auth.AuthError:
         return 401, "Failed to create a session cookie"
@@ -98,9 +101,11 @@ def logout(firebase_admin_app):
 
     try:
         decoded_claims = firebase_admin.auth.verify_session_cookie(
-            session_cookie, app=firebase_admin_app)
+            session_cookie, app=firebase_admin_app
+        )
         firebase_admin.auth.revoke_refresh_tokens(
-            decoded_claims['sub'], app=firebase_admin_app)
+            decoded_claims["sub"], app=firebase_admin_app
+        )
     except ValueError:
         # The token was invalid for one reason or another. Doesn't matter,
         # just clear the session and redirect.

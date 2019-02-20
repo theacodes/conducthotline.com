@@ -16,9 +16,8 @@
 
 from typing import Optional
 
-import peewee
-
 import hotline.telephony.chatroom
+import peewee
 from hotline.database import lowlevel
 
 

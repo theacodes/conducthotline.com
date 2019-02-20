@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import flask
-
 import hotline.auth.webhandlers
 import hotline.telephony.webhandlers
 
