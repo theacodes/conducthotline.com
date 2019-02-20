@@ -35,8 +35,7 @@
                 'Authentication': 'Bearer ' + idToken
               }}).then(function(response) {
                 document.getElementById("logged-in").setAttribute("style", "");
-                // TODO: Parametrize
-                window.location.href = "/auth/info";
+                window.location.href = {{next|tojson}} || "/";
               })
             });
           }

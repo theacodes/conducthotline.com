@@ -50,10 +50,10 @@ def auth_required(f):
             return f(*args, **kwargs)
         except ValueError:
             # Session cookie is unavailable or invalid. Force user to login.
-            return flask.redirect(flask.url_for("auth.login"))
+            return flask.redirect(flask.url_for("auth.login", next=flask.request.path))
         except firebase_admin.auth.AuthError:
             # Session revoked. Force user to login.
-            return flask.redirect(flask.url_for("auth.login"))
+            return flask.redirect(flask.url_for("auth.login", next=flask.request.path))
 
     return auth_required_view
 
@@ -61,7 +61,7 @@ def auth_required(f):
 @blueprint.route("/auth/login")
 @injector.needs("secrets.firebase.config")
 def login(config):
-    return flask.render_template("login.html", firebase_config=config)
+    return flask.render_template("login.html", firebase_config=config, next=flask.request.args.get("next"))
 
 
 @blueprint.route("/auth/token-login", methods=["POST"])
