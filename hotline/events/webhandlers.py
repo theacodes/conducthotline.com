@@ -76,6 +76,7 @@ def numbers(event_slug):
 
 
 @blueprint.route("/events/<event_slug>/members", methods=["POST"])
+@auth_required
 def add_member(event_slug):
     _verify_access(db.get_event(event_slug))
     form = forms.AddMemberForm(flask.request.form)
@@ -86,6 +87,7 @@ def add_member(event_slug):
 
 
 @blueprint.route("/events/<event_slug>/members/remove/<member_id>")
+@auth_required
 def remove_member(event_slug, member_id):
     _verify_access(db.get_event(event_slug))
     db.remove_event_member(event_slug, member_id)

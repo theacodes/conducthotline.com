@@ -34,7 +34,6 @@ def inbound_sms(virtual_number):
         print("Uh oh, no room found for message: ", message)
         return "", 204
 
-    print(room)
     room.relay(user_number, message_text)
 
     return "", 204

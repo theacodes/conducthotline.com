@@ -94,17 +94,28 @@ def find_unused_event_numbers():
 def find_unused_relay_number(event_number, organizer_number):
     """Find a relay number that isn't currently used by an existing chatroom
     connection."""
-    used_relay_numbers = ChatroomConnection.select(
+    # TODO: Should probably be a join, but its unlikely this list will
+    # get big enough in the near future to be an issue.
+    used_relay_numbers_query = ChatroomConnection.select(
         ChatroomConnection.relay_number
     ).where(ChatroomConnection.user_number == organizer_number)
-    print(list(used_relay_numbers))
+
+    used_relay_numbers = [row.relay_number for row in used_relay_numbers_query]
+
+    print("Used relay numbers: ", used_relay_numbers)
+
+    # Don't use the event number as a relay number
+    used_relay_numbers.append(event_number)
+
     unused_number_query = (
         Number.select(Number.number)
-        .where(Number.number.not_in(used_relay_numbers) & Number != event_number)
+        .where(Number.number.not_in(used_relay_numbers))
         .limit(1)
     )
 
     numbers = [row.number for row in unused_number_query]
+
+    print("Available relay numbers: ", numbers)
 
     if not numbers:
         return None
