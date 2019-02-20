@@ -2,3 +2,4 @@ flask
 nexmo
 peewee
 firebase-admin
+wtforms

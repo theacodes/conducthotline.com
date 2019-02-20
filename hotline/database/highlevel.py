@@ -28,6 +28,11 @@ def list_events(user_id: str = None):
         yield from query
 
 
+def get_event(event_slug: str = None):
+    # TODO: actually query
+    return lowlevel.Event.get()
+
+
 def _save_room(room: hotline.telephony.chatroom.Chatroom, event: lowlevel.Event):
     with lowlevel.db.atomic():
         room_row = lowlevel.Chatroom.create(event=event, room=room)

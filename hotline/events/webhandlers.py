@@ -16,6 +16,7 @@ import flask
 
 from hotline.auth import auth_required
 from hotline.database import highlevel as db
+from hotline.events import forms
 
 blueprint = flask.Blueprint("events", __name__, template_folder="templates")
 
@@ -25,3 +26,16 @@ blueprint = flask.Blueprint("events", __name__, template_folder="templates")
 def list_events():
     events = db.list_events()
     return flask.render_template("list.html", events=events)
+
+
+@blueprint.route("/events/<event_slug>/edit", methods=["GET", "POST"])
+@auth_required
+def edit_event(event_slug):
+    event = db.get_event(event_slug)
+    form = forms.EventEditForm(flask.request.form, event)
+
+    if flask.request.method == "POST" and form.validate():
+        form.populate_obj(event)
+        event.save()
+
+    return flask.render_template("edit.html", event=event, form=form)

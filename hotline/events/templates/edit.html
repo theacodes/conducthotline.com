@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block title %}Managing {{event.name}}{% endblock %}
+
+{% block content %}
+<form method="POST">
+  {% for field in form %}
+    <div class="field">
+      <label class="label">{{ field.label() }}</label>
+      <div class="control">
+        {{ field(class="input") }}
+      </div>
+      {% if field.description %}
+        <p class="help">
+            {{field.description}}
+        </p>
+      {% endif %}
+      {% if field.errors %}
+        <p class="help is-danger">
+          {% for error in field.errors %}
+            {{ error|e }}<br/>
+          {% endfor %}
+        </p>
+      {% endif %}
+    </div>
+  {% endfor %}
+
+
+  <div class="field is-grouped">
+    <div class="control">
+      <button class="button is-primary" type="submit">Save</button>
+    </div>
+  </div>
+</form>
+{% endblock %}
