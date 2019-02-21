@@ -15,13 +15,15 @@
 """Configures dependency injection across the application."""
 
 import json
+import os
 
 import hotline.database.lowlevel
 from hotline import injector
 
 
 def _load_secrets():
-    with open("secrets.json") as fh:
+    secrets_file = os.environ.get("SECRETS_FILE", "secrets.json")
+    with open(secrets_file) as fh:
         secrets = json.load(fh)
 
     injector.set("secrets", secrets)

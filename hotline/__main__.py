@@ -14,14 +14,14 @@
 
 import logging
 
-import hotline.app
 import hotline.config
 import hotline.database.lowlevel
+from hotline.app import app
 
+logging.basicConfig(level=logging.INFO)
 hotline.config.load()
 
 # This is only used when running locally. When running live, gunicorn runs
 # the application.
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    hotline.app.app.run(host="127.0.0.1", port=8080, debug=True)
+    app.run(host="127.0.0.1", port=8080, debug=True)

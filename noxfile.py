@@ -38,6 +38,12 @@ def serve(session):
 
 
 @nox.session(python="3.6")
+def serve_prod(session):
+    session.install("-r", "requirements.txt")
+    session.run("gunicorn", "-b", ":8080", "hotline.__main__:app")
+
+
+@nox.session(python="3.6")
 def shell(session):
     session.install("-r", "requirements.txt")
     session.install("ipython")

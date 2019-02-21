@@ -1,0 +1,9 @@
+runtime: python37
+entrypoint: gunicorn -b :$PORT hotline.__main__:app
+
+env_variables:
+  SECRETS_FILE: "secrets.prod.json"
+
+handlers:
+- url: /.*
+  script: auto
