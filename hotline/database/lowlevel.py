@@ -16,9 +16,16 @@
 stuff into the higher-level interface."""
 
 import hotline.telephony.chatroom
+from hotline import injector
 import peewee
+import playhouse.db_url
 
-db = peewee.SqliteDatabase("hotline.db")
+db = peewee.Proxy()
+
+
+@injector.needs("secrets.database")
+def initialize_db(database):
+    db.initialize(playhouse.db_url.connect(database))
 
 
 class BaseModel(peewee.Model):

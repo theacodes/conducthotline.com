@@ -14,6 +14,7 @@
 
 """Recreates database tables / does migrations."""
 
+import hotline.config
 from hotline.database import lowlevel
 
 models = [
@@ -32,4 +33,5 @@ def create_tables():
 
 
 if __name__ == "__main__":
+    hotline.config.load()
     create_tables()

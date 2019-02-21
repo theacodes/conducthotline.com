@@ -17,14 +17,21 @@
 import json
 
 from hotline import injector
+import hotline.database.lowlevel
 
 
-def test_config():
+def _load_secrets():
     with open("secrets.json") as fh:
         secrets = json.load(fh)
 
     injector.set("secrets", secrets)
 
 
-# by default, use test config on import.
-test_config()
+def _initialize_resources():
+    # Initialize the database, now that we have configuration.
+    hotline.database.lowlevel.initialize_db()
+
+
+def load():
+    _load_secrets()
+    _initialize_resources()

@@ -3,3 +3,4 @@ nexmo
 peewee
 firebase-admin
 wtforms
+psycopg2-binary
