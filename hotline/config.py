@@ -16,8 +16,8 @@
 
 import json
 
-from hotline import injector
 import hotline.database.lowlevel
+from hotline import injector
 
 
 def _load_secrets():

@@ -19,6 +19,7 @@ import firebase_admin
 import firebase_admin.auth
 import firebase_admin.credentials
 import flask
+
 from hotline import injector
 
 _COOKIE_NAME = "auth-session"
@@ -61,7 +62,9 @@ def auth_required(f):
 @blueprint.route("/auth/login")
 @injector.needs("secrets.firebase.config")
 def login(config):
-    return flask.render_template("login.html", firebase_config=config, next=flask.request.args.get("next"))
+    return flask.render_template(
+        "login.html", firebase_config=config, next=flask.request.args.get("next")
+    )
 
 
 @blueprint.route("/auth/token-login", methods=["POST"])

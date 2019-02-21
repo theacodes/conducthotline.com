@@ -40,7 +40,7 @@ _default_sentinel = object()
 def _dot_get(name: str, container: dict):
     parts = name.split(".", 1)
 
-    if(name in container):
+    if name in container:
         return container[name]
 
     if len(parts) > 1:

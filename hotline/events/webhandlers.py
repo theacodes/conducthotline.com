@@ -13,11 +13,14 @@
 # limitations under the License.
 
 import flask
+
+import hotline.database.ext
 from hotline.auth import auth_required
 from hotline.database import highlevel as db
 from hotline.events import forms
 
 blueprint = flask.Blueprint("events", __name__, template_folder="templates")
+hotline.database.ext.init_app(blueprint)
 
 
 @blueprint.route("/events")

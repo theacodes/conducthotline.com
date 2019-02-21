@@ -12,16 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
+"""Flask extension for database stuff."""
 
-import hotline.app
-import hotline.config
-import hotline.database.lowlevel
 
-hotline.config.load()
+from hotline.database import lowlevel
 
-# This is only used when running locally. When running live, gunicorn runs
-# the application.
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    hotline.app.app.run(host="127.0.0.1", port=8080, debug=True)
+
+def _db_connect():
+    lowlevel.db.connect()
+
+
+def _db_close(response):
+    if not lowlevel.db.is_closed():
+        lowlevel.db.close()
+
+
+def init_app(app):
+    app.before_request(_db_connect)
+    app.teardown_request(_db_close)

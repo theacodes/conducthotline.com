@@ -15,10 +15,11 @@
 """Low-level database primitives. Moved here to prevent bleeding db-specific
 stuff into the higher-level interface."""
 
-import hotline.telephony.chatroom
-from hotline import injector
 import peewee
 import playhouse.db_url
+
+import hotline.telephony.chatroom
+from hotline import injector
 
 db = peewee.Proxy()
 

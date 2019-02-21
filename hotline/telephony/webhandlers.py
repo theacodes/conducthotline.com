@@ -13,10 +13,13 @@
 # limitations under the License.
 
 import flask
+
+import hotline.database.ext
 from hotline import injector
 from hotline.database import highlevel as db
 
 blueprint = flask.Blueprint("telephony", __name__)
+hotline.database.ext.init_app(blueprint)
 
 
 @blueprint.route("/telephony/inbound-sms", methods=["POST"])
