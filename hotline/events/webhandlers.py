@@ -15,6 +15,7 @@
 import flask
 
 import hotline.database.ext
+import hotline.telephony.verification
 from hotline.auth import auth_required
 from hotline.database import highlevel as db
 from hotline.events import forms
@@ -86,6 +87,7 @@ def add_member(event_slug):
     member = db.new_event_member(event_slug)
     form.populate_obj(member)
     member.save()
+    hotline.telephony.verification.start_member_verification(member)
     return flask.redirect(flask.url_for(".numbers", event_slug=event_slug))
 
 

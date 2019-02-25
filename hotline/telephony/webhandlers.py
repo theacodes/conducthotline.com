@@ -17,6 +17,7 @@ import flask
 import hotline.database.ext
 from hotline import injector
 from hotline.database import highlevel as db
+from hotline.telephony import verification
 
 blueprint = flask.Blueprint("telephony", __name__)
 hotline.database.ext.init_app(blueprint)
@@ -31,6 +32,11 @@ def inbound_sms(virtual_number):
     relay_number = message["to"]
     message_text = message["text"]
 
+    # Maybe handle verification, if this is a response to a verification message.
+    if verification.maybe_handle_verification(user_number, message_text):
+        return "", 204
+
+    # okay, it wasn't a verification text - pass it on to the right hotline.
     room = db.find_room_for_user(user_number=user_number, relay_number=relay_number)
 
     if not room:

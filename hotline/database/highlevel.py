@@ -50,6 +50,11 @@ def get_event_members(event):
     yield from query
 
 
+def get_verified_event_members(event):
+    query = event.members.where(lowlevel.EventMember.verified == True)  # noqa
+    yield from query
+
+
 def new_event_member(event_slug: str):
     member = lowlevel.EventMember()
     member.event = get_event(event_slug)
@@ -61,6 +66,16 @@ def remove_event_member(event_slug: str, member_id):
     lowlevel.EventMember.get(
         lowlevel.EventMember.id == int(member_id)
     ).delete_instance()
+
+
+def find_pending_member_by_number(member_number):
+    try:
+        return lowlevel.EventMember.get(
+            lowlevel.EventMember.number == member_number,
+            lowlevel.EventMember.verified == False,
+        )  # noqa
+    except peewee.DoesNotExist:
+        return None
 
 
 def acquire_number(event_slug: str = None):
@@ -110,8 +125,7 @@ def _create_room(
     )
 
     # Find all organizers.
-    # TODO: Only verified numbers.
-    organizers = list(event.members)
+    organizers = list(get_verified_event_members(event))
 
     if not organizers:
         print(f"No organizers found for {event.name}. :/")
