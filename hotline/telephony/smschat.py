@@ -44,22 +44,7 @@ class NoRelaysAvailable(SmsChatError):
     pass
 
 
-def _save_room(room: hotline.chatroom.Chatroom, event: models.Event):
-    with models.db.atomic():
-        room_row = models.Chatroom.create(event=event, room=room)
-
-        for connection in room.users:
-            models.ChatroomConnection.create(
-                user_number=connection.number,
-                relay_number=connection.relay,
-                user_name=connection.name,
-                chatroom=room_row,
-            )
-
-
-def _create_room(
-    event_number: str, reporter_number: str
-) -> Optional[hotline.chatroom.Chatroom]:
+def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Chatroom:
     """Creates a room for the event with the given primary number.
 
     The alogrithm is a little tricky here. The event organizers can not use
@@ -68,6 +53,9 @@ def _create_room(
     """
     # Find the event.
     event = db.get_event_by_number(event_number)
+
+    if not event:
+        raise EventDoesNotExist(f"No event for number {event_number}.")
 
     # Create a chatroom
     chatroom = hotline.chatroom.Chatroom()
@@ -97,45 +85,25 @@ def _create_room(
         )
 
     # Save the chatroom.
-    _save_room(chatroom, event=event)
+    db.save_room(chatroom, event=event)
     return chatroom
 
 
-def _find_room_for_user(
-    user_number: str, relay_number: str
-) -> Optional[hotline.chatroom.Chatroom]:
+def _find_room(user_number: str, relay_number: str) -> hotline.chatroom.Chatroom:
     with models.db.atomic():
-        try:
-            connection = models.ChatroomConnection.get(
-                models.ChatroomConnection.user_number == user_number,
-                models.ChatroomConnection.relay_number == relay_number,
-            )
+        # Try to find an existing room first.
+        room = db.find_room_by_user_and_relay_numbers(user_number, relay_number)
 
-            # This could be faster with a join, but I'm not terribly worried about speed right now.
-            return connection.chatroom.room
-
-        except peewee.DoesNotExist:
-            pass
-
-        # Locate the event and create a new room for the event.
-        try:
-            room = _create_room(relay_number, user_number)
+        if room is not None:
             return room
 
-        # The event doesn't exist, so bail. :(
-        except peewee.DoesNotExist:
-            raise EventDoesNotExist(f"No event for number {relay_number}.")
+        # Create a new room.
+        return _create_room(relay_number, user_number)
 
 
 def handle_message(sender: str, relay: str, message: str):
     """Handles an incoming SMS and hands it off to the appropriate room."""
 
-    room = _find_room_for_user(user_number=sender, relay_number=relay)
-
-    if not room:
-        print("Uh oh, no room found for message: ", message)
-        return False
+    room = _find_room(user_number=sender, relay_number=relay)
 
     room.relay(sender, message, hotline.telephony.lowlevel.send_sms)
-
-    return True

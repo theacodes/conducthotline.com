@@ -124,7 +124,7 @@ def test_handle_message_new_chat(send_sms, database):
     create_organizers(event)
     create_relays()
 
-    assert smschat.handle_message("1234", "5678", "Hello")
+    smschat.handle_message("1234", "5678", "Hello")
 
     # Two messages should have been sent to the two verified organizers.
     # The sender should be the *first* relay number (1111)
@@ -166,13 +166,13 @@ def test_handle_message_reply(send_sms, database):
     create_relays()
 
     # Send initial message to establish the chat.
-    assert smschat.handle_message("1234", "5678", "Hello")
+    smschat.handle_message("1234", "5678", "Hello")
 
     # Reset the mock for send_sms
     send_sms.reset_mock()
 
     # Send a reply from one of the organizers.
-    assert smschat.handle_message("101", "1111", "Goodbye")
+    smschat.handle_message("101", "1111", "Goodbye")
 
     # Two messages should have been sent. One to the reporter, and one to the
     # other verified member.
