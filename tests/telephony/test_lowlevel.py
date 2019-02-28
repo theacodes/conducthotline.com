@@ -23,10 +23,12 @@ from hotline.telephony import lowlevel
 def test_rent_number():
     client = mock.create_autospec(nexmo.Client)
 
-    client.get_available_numbers.return_value = {"numbers": [
-        {"country": "US", "msisdn": "123456789"},
-        {"country": "US", "msisdn": "987654321"},
-    ]}
+    client.get_available_numbers.return_value = {
+        "numbers": [
+            {"country": "US", "msisdn": "123456789"},
+            {"country": "US", "msisdn": "987654321"},
+        ]
+    }
 
     result = lowlevel.rent_number(client=client)
 
@@ -39,8 +41,7 @@ def test_rent_number():
 def test_rent_number_none_available():
     client = mock.create_autospec(nexmo.Client)
 
-    client.get_available_numbers.return_value = {"numbers": [
-    ]}
+    client.get_available_numbers.return_value = {"numbers": []}
 
     with pytest.raises(RuntimeError, match="No numbers available"):
         lowlevel.rent_number(client=client)
@@ -49,17 +50,16 @@ def test_rent_number_none_available():
 def test_rent_number_buy_error_is_okay():
     client = mock.create_autospec(nexmo.Client)
 
-    client.get_available_numbers.return_value = {"numbers": [
-        {"country": "US", "msisdn": "123456789"},
-        {"country": "US", "msisdn": "987654321"},
-    ]}
+    client.get_available_numbers.return_value = {
+        "numbers": [
+            {"country": "US", "msisdn": "123456789"},
+            {"country": "US", "msisdn": "987654321"},
+        ]
+    }
 
     # Return an error when trying to buy the first number, so that the method
     # ends up buying the second number.
-    client.buy_number.side_effect = [
-        nexmo.Error(),
-        None
-    ]
+    client.buy_number.side_effect = [nexmo.Error(), None]
 
     result = lowlevel.rent_number(client=client)
 
@@ -74,8 +74,6 @@ def test_send_sms():
 
     lowlevel.send_sms(to="1234", sender="5678", message="meep", client=client)
 
-    client.send_message.assert_called_once_with({
-        "from": "5678",
-        "to": "1234",
-        "text": "meep"
-    })
+    client.send_message.assert_called_once_with(
+        {"from": "5678", "to": "1234", "text": "meep"}
+    )

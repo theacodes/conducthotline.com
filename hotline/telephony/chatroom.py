@@ -54,8 +54,7 @@ class Chatroom:
             if user == sender:
                 continue
 
-            resp = lowlevel.send_sms(sender=user.relay, to=user.number, message=message)
-            print(resp)
+            lowlevel.send_sms(sender=user.relay, to=user.number, message=message)
 
     def __str__(self) -> str:
         users = [user.name for user in self._users.values()]

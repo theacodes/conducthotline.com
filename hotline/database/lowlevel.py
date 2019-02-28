@@ -16,9 +16,9 @@
 stuff into the higher-level interface."""
 
 import peewee
-import playhouse.db_url
 
 import hotline.telephony.chatroom
+import playhouse.db_url
 from hotline import injector
 
 db = peewee.Proxy()
