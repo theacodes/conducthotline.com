@@ -30,11 +30,16 @@ way of sending or receiving messages.
 
 import json
 from collections import namedtuple
-from typing import Callable
+from typing import Any
+
+from typing_extensions import Protocol
 
 _User = namedtuple("_User", ["name", "number", "relay"])
 
-SendFn = Callable[[str, str, str], None]
+
+class SendFn(Protocol):
+    def __call__(self, sender: str, to: str, message: str) -> Any:
+        pass
 
 
 class Chatroom:
@@ -42,9 +47,7 @@ class Chatroom:
         self._users = {}
 
     def add_user(self, name: str, number: str, relay: str):
-        self._users[number] = _User(
-            name=name, number=number, relay=relay
-        )
+        self._users[number] = _User(name=name, number=number, relay=relay)
 
     @property
     def users(self):

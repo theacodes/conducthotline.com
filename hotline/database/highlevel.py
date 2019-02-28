@@ -108,7 +108,7 @@ def _save_room(room: hotline.chatroom.Chatroom, event: lowlevel.Event):
 
 def _create_room(
     event_number: str, reporter_number: str
-) -> hotline.chatroom.Chatroom:
+) -> Optional[hotline.chatroom.Chatroom]:
     """Creates a room for the event with the given primary number.
 
     The alogrithm is a little tricky here. The event organizers can not use
@@ -120,9 +120,7 @@ def _create_room(
 
     # Create a chatroom
     chatroom = hotline.chatroom.Chatroom()
-    chatroom.add_user(
-        name="Reporter", user_number=reporter_number, relay_number=event_number
-    )
+    chatroom.add_user(name="Reporter", number=reporter_number, relay=event_number)
 
     # Find all organizers.
     organizers = list(get_verified_event_members(event))
@@ -148,7 +146,7 @@ def _create_room(
     # Now add the organizers and their relay.
     for organizer in organizers:
         chatroom.add_user(
-            name=organizer.name, user_number=organizer.number, relay_number=relay_number
+            name=organizer.name, number=organizer.number, relay=relay_number
         )
 
     print(chatroom.serialize())

@@ -25,6 +25,14 @@ def format(session):
 
 
 @nox.session(python="3.7")
+def lint(session):
+    session.install("mypy", "flake8", "black")
+    session.run("black", "--check", "hotline", "tests")
+    session.run("flake8", "docuploader", "tests")
+    session.run("mypy", "hotline")
+
+
+@nox.session(python="3.7")
 def test(session):
     session.install("-r", "requirements-test.txt")
     session.run("pytest", "tests")

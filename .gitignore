@@ -71,6 +71,9 @@ target/
 # pyenv
 .python-version
 
+# MyPy
+.mypy_cache/
+
 # secrets
 secrets.json
 secrets.prod.json

@@ -17,8 +17,7 @@ import flask
 import hotline.database.ext
 from hotline import injector
 from hotline.database import highlevel as db
-from hotline.telephony import lowlevel
-from hotline.telephony import verification
+from hotline.telephony import lowlevel, verification
 
 blueprint = flask.Blueprint("telephony", __name__)
 hotline.database.ext.init_app(blueprint)
