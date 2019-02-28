@@ -14,11 +14,8 @@
 
 """High-level database operations."""
 
-from typing import Optional
-
 import peewee
 
-import hotline.chatroom
 from hotline.database import lowlevel
 
 
@@ -78,10 +75,23 @@ def find_pending_member_by_number(member_number):
         return None
 
 
+def find_unused_event_numbers():
+    return list(
+        lowlevel.Number.select()
+        .join(
+            lowlevel.Event,
+            peewee.JOIN.LEFT_OUTER,
+            on=(lowlevel.Event.primary_number_id == lowlevel.Number.id),
+        )
+        .where(lowlevel.Event.primary_number_id.is_null())
+        .limit(5)
+    )
+
+
 def acquire_number(event_slug: str = None):
     with lowlevel.db.atomic():
         event = lowlevel.Event.get(lowlevel.Event.slug == event_slug)
-        numbers = lowlevel.find_unused_event_numbers()
+        numbers = find_unused_event_numbers()
 
         # TODO: Check for no available numbers
         number = numbers[0]
@@ -93,91 +103,33 @@ def acquire_number(event_slug: str = None):
         return event
 
 
-def _save_room(room: hotline.chatroom.Chatroom, event: lowlevel.Event):
-    with lowlevel.db.atomic():
-        room_row = lowlevel.Chatroom.create(event=event, room=room)
+def find_unused_relay_number(event_number, organizer_number):
+    """Find a relay number that isn't currently used by an existing chatroom
+    connection."""
+    # TODO: Should probably be a join, but its unlikely this list will
+    # get big enough in the near future to be an issue.
+    used_relay_numbers_query = lowlevel.ChatroomConnection.select(
+        lowlevel.ChatroomConnection.relay_number
+    ).where(lowlevel.ChatroomConnection.user_number == organizer_number)
 
-        for connection in room.users:
-            lowlevel.ChatroomConnection.create(
-                user_number=connection.number,
-                relay_number=connection.relay,
-                user_name=connection.name,
-                chatroom=room_row,
-            )
+    used_relay_numbers = [row.relay_number for row in used_relay_numbers_query]
 
+    print("Used relay numbers: ", used_relay_numbers)
 
-def _create_room(
-    event_number: str, reporter_number: str
-) -> Optional[hotline.chatroom.Chatroom]:
-    """Creates a room for the event with the given primary number.
+    # Don't use the event number as a relay number
+    used_relay_numbers.append(event_number)
 
-    The alogrithm is a little tricky here. The event organizers can not use
-    the primary number as the chat relay for this chat, so a new number must be
-    used.
-    """
-    # Find the event.
-    event = lowlevel.Event.get(lowlevel.Event.primary_number == event_number)
-
-    # Create a chatroom
-    chatroom = hotline.chatroom.Chatroom()
-    chatroom.add_user(name="Reporter", number=reporter_number, relay=event_number)
-
-    # Find all organizers.
-    organizers = list(get_verified_event_members(event))
-
-    if not organizers:
-        print(f"No organizers found for {event.name}. :/")
-        return None
-
-    # Find an unused number to use for the organizers' relay.
-    # Use the first organizer's number here, as all organizers should be
-    # assigned the same relay anyway.
-    organizer_number = organizers[0].number
-    relay_number = lowlevel.find_unused_relay_number(
-        event.primary_number, organizer_number
+    unused_number_query = (
+        lowlevel.Number.select(lowlevel.Number.number)
+        .where(lowlevel.Number.number.not_in(used_relay_numbers))
+        .limit(1)
     )
 
-    print("Relay number: ", relay_number)
+    numbers = [row.number for row in unused_number_query]
 
-    if not relay_number:
-        print("No relays available.")
+    print("Available relay numbers: ", numbers)
+
+    if not numbers:
         return None
-
-    # Now add the organizers and their relay.
-    for organizer in organizers:
-        chatroom.add_user(
-            name=organizer.name, number=organizer.number, relay=relay_number
-        )
-
-    print(chatroom.serialize())
-
-    # Save the chatroom.
-    _save_room(chatroom, event=event)
-    return chatroom
-
-
-def find_room_for_user(
-    user_number: str, relay_number: str
-) -> Optional[hotline.chatroom.Chatroom]:
-    with lowlevel.db.atomic():
-        try:
-            connection = lowlevel.ChatroomConnection.get(
-                lowlevel.ChatroomConnection.user_number == user_number,
-                lowlevel.ChatroomConnection.relay_number == relay_number,
-            )
-
-            # This could be faster with a join, but I'm not terribly worried about speed right now.
-            return connection.chatroom.room
-
-        except peewee.DoesNotExist:
-            pass
-
-        # Locate the event and create a new room for the event.
-        try:
-            room = _create_room(relay_number, user_number)
-            return room
-
-        # The event doesn't exist, so bail. :(
-        except peewee.DoesNotExist:
-            print(f"No event for number {relay_number}.")
-            return None
+    else:
+        return numbers[0]

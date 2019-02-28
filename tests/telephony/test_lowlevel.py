@@ -67,7 +67,8 @@ def test_rent_number_buy_error_is_okay():
     assert client.buy_number.call_count == 2
 
 
-def test_send_sms():
+@mock.patch("time.sleep", autospec=True)
+def test_send_sms(sleep):
     client = mock.create_autospec(nexmo.Client)
 
     client.send_message.return_value = {"messages": [{}]}

@@ -19,6 +19,7 @@ relatively sane.
 """
 
 import functools
+import inspect
 from typing import Any, Dict, List
 
 _registry: Dict[str, Any] = dict()
@@ -67,6 +68,33 @@ def get(name: str, default=_default_sentinel):
         raise KeyError(f"{name} has not been provided.")
 
 
+def _modify_function_signature(func, injected_items: List[str]):
+    """Modifies a function sigature to turn any injected items into optional
+    keyword args. This makes injection play nicely with mock's autospeccing.
+    """
+    signature = inspect.signature(func)
+
+    print(func, signature)
+
+    regular_params = [
+        param
+        for param in signature.parameters.values()
+        if param.name not in injected_items
+    ]
+
+    new_params = [
+        param.replace(kind=inspect.Parameter.KEYWORD_ONLY, default=None)
+        for param in signature.parameters.values()
+        if param.name in injected_items
+    ]
+
+    signature = signature.replace(parameters=regular_params + new_params)
+
+    print(signature)
+
+    func.__signature__ = signature
+
+
 def needs(*things):
     """An injector that injects the requested dependences into a function's
     arguments.
@@ -75,15 +103,21 @@ def needs(*things):
     and "-" will be replaced with "_".
     """
 
+    things_parameter_names = {
+        requirement.rsplit(".", 1)[-1].replace("-", "_"): requirement
+        for requirement in things
+    }
+
     def decorator(f):
         @functools.wraps(f)
         def invocation(*args, **kwargs):
-            for req in things:
-                req_clean_name = req.rsplit(".", 1)[-1].replace("-", "_")
-                if req_clean_name not in kwargs:
-                    kwargs[req_clean_name] = get(req)
+            for parameter, requirement in things_parameter_names.items():
+                if parameter not in kwargs:
+                    kwargs[parameter] = get(requirement)
+            print(f, things)
             return f(*args, **kwargs)
 
+        _modify_function_signature(invocation, list(things_parameter_names.keys()))
         return invocation
 
     return decorator
