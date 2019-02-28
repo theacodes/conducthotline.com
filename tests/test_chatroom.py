@@ -14,31 +14,32 @@
 
 from unittest import mock
 
-from hotline.telephony import chatroom
+from hotline import chatroom
 
 
 def test_add_user_unique_constraint():
     room = chatroom.Chatroom()
 
-    room.add_user(name="A", user_number="1234", relay_number="1")
-    room.add_user(name="B", user_number="5678", relay_number="2")
-    room.add_user(name="C", user_number="1234", relay_number="3")
+    room.add_user(name="A", number="1234", relay="1")
+    room.add_user(name="B", number="5678", relay="2")
+    room.add_user(name="C", number="1234", relay="3")
 
     assert len(room.users) == 2
 
 
-@mock.patch("hotline.telephony.lowlevel.send_sms")
-def test_relay(send_sms):
+def test_relay():
     room = chatroom.Chatroom()
 
-    room.add_user(name="A", user_number="1234", relay_number="1")
-    room.add_user(name="B", user_number="5678", relay_number="2")
-    room.add_user(name="C", user_number="1111", relay_number="3")
+    room.add_user(name="A", number="1234", relay="1")
+    room.add_user(name="B", number="5678", relay="2")
+    room.add_user(name="C", number="1111", relay="3")
+
+    send_message = mock.Mock(spec=["__call__"])
 
     # A message from User A.
-    room.relay("1234", "meep")
+    room.relay("1234", "meep", send_message=send_message)
 
-    send_sms.assert_has_calls(
+    send_message.assert_has_calls(
         [
             mock.call(to="5678", sender="2", message="A: meep"),
             mock.call(to="1111", sender="3", message="A: meep"),
@@ -46,10 +47,10 @@ def test_relay(send_sms):
     )
 
     # A message from User B.
-    send_sms.reset()
-    room.relay("5678", "moop")
+    send_message.reset_mock()
+    room.relay("5678", "moop", send_message=send_message)
 
-    send_sms.assert_has_calls(
+    send_message.assert_has_calls(
         [
             mock.call(to="1234", sender="1", message="B: moop"),
             mock.call(to="1111", sender="3", message="B: moop"),
@@ -60,9 +61,9 @@ def test_relay(send_sms):
 def test_serialize_deserialize():
     room = chatroom.Chatroom()
 
-    room.add_user(name="A", user_number="1234", relay_number="1")
-    room.add_user(name="B", user_number="5678", relay_number="2")
-    room.add_user(name="C", user_number="1111", relay_number="3")
+    room.add_user(name="A", number="1234", relay="1")
+    room.add_user(name="B", number="5678", relay="2")
+    room.add_user(name="C", number="1111", relay="3")
 
     roundtripped = room.deserialize(room.serialize())
 

@@ -17,7 +17,7 @@ stuff into the higher-level interface."""
 
 import peewee
 
-import hotline.telephony.chatroom
+import hotline.chatroom
 import playhouse.db_url
 from hotline import injector
 
@@ -77,7 +77,7 @@ class EventMember(BaseModel):
 
 class Chatroom(BaseModel):
     event = peewee.ForeignKeyField(Event)
-    room = SerializableField(hotline.telephony.chatroom.Chatroom)
+    room = SerializableField(hotline.chatroom.Chatroom)
 
 
 class ChatroomConnection(BaseModel):

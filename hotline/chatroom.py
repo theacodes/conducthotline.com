@@ -12,40 +12,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implements a chat room via sms.
+"""An abstract chat room.
 
 Whenever one person sends a message, it is forwarded to the other users. The
-number used for relaying can be set per user.
+"number" used for relaying can be set per user.
 
 For example,
 
 Alice sends the message "Hello" to 1234,
 Bob receives a message from 3456 that says "Alice: Hello",
 Sandy recieves a message from 6789 that says "Alice: "Hello".
+
+This class does not know how to send messages and must be provided with a
+function that can send messages. This keeps it decoupled from any particular
+way of sending or receiving messages.
 """
 
 import json
 from collections import namedtuple
-
-from hotline.telephony import lowlevel
+from typing import Callable
 
 _User = namedtuple("_User", ["name", "number", "relay"])
+
+SendFn = Callable[[str, str, str], None]
 
 
 class Chatroom:
     def __init__(self):
         self._users = {}
 
-    def add_user(self, name: str, user_number: str, relay_number: str):
-        self._users[user_number] = _User(
-            name=name, number=user_number, relay=relay_number
+    def add_user(self, name: str, number: str, relay: str):
+        self._users[number] = _User(
+            name=name, number=number, relay=relay
         )
 
     @property
     def users(self):
         return self._users.values()
 
-    def relay(self, user_number: str, message: str):
+    def relay(self, user_number: str, message: str, send_message: SendFn):
         sender = self._users[user_number]
         message = f"{sender.name}: {message}"
 
@@ -54,7 +59,7 @@ class Chatroom:
             if user == sender:
                 continue
 
-            lowlevel.send_sms(sender=user.relay, to=user.number, message=message)
+            send_message(sender=user.relay, to=user.number, message=message)
 
     def __str__(self) -> str:
         users = [user.name for user in self._users.values()]

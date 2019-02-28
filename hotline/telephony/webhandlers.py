@@ -17,6 +17,7 @@ import flask
 import hotline.database.ext
 from hotline import injector
 from hotline.database import highlevel as db
+from hotline.telephony import lowlevel
 from hotline.telephony import verification
 
 blueprint = flask.Blueprint("telephony", __name__)
@@ -43,6 +44,6 @@ def inbound_sms(virtual_number):
         print("Uh oh, no room found for message: ", message)
         return "", 204
 
-    room.relay(user_number, message_text)
+    room.relay(user_number, message_text, lowlevel.send_sms)
 
     return "", 204

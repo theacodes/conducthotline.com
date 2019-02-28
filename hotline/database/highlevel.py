@@ -18,7 +18,7 @@ from typing import Optional
 
 import peewee
 
-import hotline.telephony.chatroom
+import hotline.chatroom
 from hotline.database import lowlevel
 
 
@@ -93,7 +93,7 @@ def acquire_number(event_slug: str = None):
         return event
 
 
-def _save_room(room: hotline.telephony.chatroom.Chatroom, event: lowlevel.Event):
+def _save_room(room: hotline.chatroom.Chatroom, event: lowlevel.Event):
     with lowlevel.db.atomic():
         room_row = lowlevel.Chatroom.create(event=event, room=room)
 
@@ -108,7 +108,7 @@ def _save_room(room: hotline.telephony.chatroom.Chatroom, event: lowlevel.Event)
 
 def _create_room(
     event_number: str, reporter_number: str
-) -> hotline.telephony.chatroom.Chatroom:
+) -> hotline.chatroom.Chatroom:
     """Creates a room for the event with the given primary number.
 
     The alogrithm is a little tricky here. The event organizers can not use
@@ -119,7 +119,7 @@ def _create_room(
     event = lowlevel.Event.get(lowlevel.Event.primary_number == event_number)
 
     # Create a chatroom
-    chatroom = hotline.telephony.chatroom.Chatroom()
+    chatroom = hotline.chatroom.Chatroom()
     chatroom.add_user(
         name="Reporter", user_number=reporter_number, relay_number=event_number
     )
@@ -160,7 +160,7 @@ def _create_room(
 
 def find_room_for_user(
     user_number: str, relay_number: str
-) -> Optional[hotline.telephony.chatroom.Chatroom]:
+) -> Optional[hotline.chatroom.Chatroom]:
     with lowlevel.db.atomic():
         try:
             connection = lowlevel.ChatroomConnection.get(
