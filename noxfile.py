@@ -17,19 +17,20 @@ import os
 import nox
 
 
-@nox.session(python="3.6")
+@nox.session(python="3.7")
 def format(session):
     session.install("black", "isort")
     session.run("black", "hotline", "tests", "noxfile.py")
     session.run("isort", "-rc", "hotline", "tests", "noxfile.py")
 
 
-@nox.session(python="3.6")
+@nox.session(python="3.7")
 def test(session):
-    pass
+    session.install("-r", "requirements-test.txt")
+    session.run("pytest", "tests")
 
 
-@nox.session(python="3.6")
+@nox.session(python="3.7")
 def serve(session):
     session.install("-r", "requirements.txt")
     # Workaround for https://github.com/pallets/werkzeug/issues/461
@@ -37,13 +38,13 @@ def serve(session):
     session.run("python", "-m", "hotline", env=env)
 
 
-@nox.session(python="3.6")
+@nox.session(python="3.7")
 def serve_prod(session):
     session.install("-r", "requirements.txt")
     session.run("gunicorn", "-b", ":8080", "hotline.__main__:app")
 
 
-@nox.session(python="3.6")
+@nox.session(python="3.7")
 def shell(session):
     session.install("-r", "requirements.txt")
     session.install("ipython")

@@ -37,7 +37,8 @@ def rent_number(client: nexmo.Client, country_code: str = "US") -> dict:
         country_code, {"features": "SMS,VOICE", "type": "mobile-lvn"}
     )
 
-    error = None
+    error = RuntimeError("No numbers available.")
+
     for number in numbers["numbers"]:
         try:
             client.buy_number(
@@ -66,6 +67,7 @@ def send_sms(sender: str, to: str, message: str, client: nexmo.Client) -> dict:
 
     import time
 
+    # TODO: Something... better.
     time.sleep(2)
 
     return resp

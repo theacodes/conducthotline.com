@@ -105,3 +105,7 @@ def provides(name=None, needs: List[str] = None):
         return f
 
     return decorator
+
+
+def reset():
+    _registry.clear()
