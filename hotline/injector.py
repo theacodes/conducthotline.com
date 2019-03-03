@@ -74,8 +74,6 @@ def _modify_function_signature(func, injected_items: List[str]):
     """
     signature = inspect.signature(func)
 
-    print(func, signature)
-
     regular_params = [
         param
         for param in signature.parameters.values()
@@ -89,8 +87,6 @@ def _modify_function_signature(func, injected_items: List[str]):
     ]
 
     signature = signature.replace(parameters=regular_params + new_params)
-
-    print(signature)
 
     func.__signature__ = signature
 
@@ -114,7 +110,6 @@ def needs(*things):
             for parameter, requirement in things_parameter_names.items():
                 if parameter not in kwargs:
                     kwargs[parameter] = get(requirement)
-            print(f, things)
             return f(*args, **kwargs)
 
         _modify_function_signature(invocation, list(things_parameter_names.keys()))
