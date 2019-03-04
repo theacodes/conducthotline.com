@@ -71,6 +71,13 @@ def remove_event_member(event_slug: str, member_id: str) -> None:
     ).delete_instance()
 
 
+def get_member_by_number(member_number) -> Optional[lowlevel.EventMember]:
+    try:
+        return lowlevel.EventMember.get(lowlevel.EventMember.number == member_number)
+    except peewee.DoesNotExist:
+        return None
+
+
 def find_pending_member_by_number(member_number) -> Optional[lowlevel.EventMember]:
     try:
         return lowlevel.EventMember.get(

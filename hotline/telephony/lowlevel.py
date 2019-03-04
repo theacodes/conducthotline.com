@@ -21,10 +21,21 @@ from hotline import injector
 
 
 @injector.provides(
-    "nexmo.client", needs=["secrets.nexmo.api_key", "secrets.nexmo.api_secret"]
+    "nexmo.client",
+    needs=[
+        "secrets.nexmo.api_key",
+        "secrets.nexmo.api_secret",
+        "secrets.nexmo.private_key_location",
+        "secrets.nexmo.application_id",
+    ],
 )
-def _make_client(api_key, api_secret):
-    return nexmo.Client(key=api_key, secret=api_secret)
+def _make_client(api_key, api_secret, private_key_location, application_id):
+    return nexmo.Client(
+        key=api_key,
+        secret=api_secret,
+        application_id=application_id,
+        private_key=private_key_location,
+    )
 
 
 @injector.needs("nexmo.client")
