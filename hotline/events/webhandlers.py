@@ -180,4 +180,4 @@ def acquire(event, user):
 def logs(event, user):
     logs = db.get_logs_for_event(event)
 
-    return flask.render_template("logs.html", event=event, logs=logs)
+    return flask.render_template("logs.html", event=event, logs=logs, Kind=audit_log.Kind)

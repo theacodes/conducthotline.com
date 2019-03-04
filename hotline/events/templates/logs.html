@@ -17,7 +17,7 @@
     {% for log in logs %}
     <tr>
       <td>{{log.timestamp.isoformat()}}</td>
-      <td>{{log.kind}}</td>
+      <td>{{Kind(log.kind).name.replace("_", " ")|title}}</td>
       <td>{{log.description}}</td>
     </tr>
     {% endfor %}
