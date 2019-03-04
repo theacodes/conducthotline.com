@@ -22,7 +22,7 @@ from typing import List
 
 import nexmo
 
-from hotline import injector
+from hotline import audit_log, injector
 from hotline.database import highlevel as db
 
 HOLD_MUSIC = "https://assets.ctfassets.net/j7pfe8y48ry3/530pLnJVZmiUu8mkEgIMm2/dd33d28ab6af9a2d32681ae80004886e/oaklawn-dreams.mp3"
@@ -100,6 +100,12 @@ def handle_inbound_call(
                 "answer_method": "POST",
             }
         )
+
+    audit_log.log(
+        audit_log.Kind.VOICE_CONVERSATION_STARTED,
+        description=f"A new voice conversation was started, uuid is {conversation_uuid}",
+        event=event,
+    )
 
     return reporter_nccos
 

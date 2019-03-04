@@ -17,7 +17,14 @@
 import hotline.config
 from hotline.database import models as db
 
-models = [db.Number, db.Event, db.EventMember, db.Chatroom, db.ChatroomConnection]
+models = [
+    db.Number,
+    db.Event,
+    db.EventMember,
+    db.Chatroom,
+    db.ChatroomConnection,
+    db.AuditLog,
+]
 
 
 def create_tables():

@@ -14,7 +14,7 @@
 
 """Methods for verifying numbers."""
 
-from hotline import injector
+from hotline import audit_log, injector
 from hotline.database import highlevel as db
 from hotline.telephony import lowlevel
 
@@ -57,5 +57,11 @@ def maybe_handle_verification(member_number: str, message: str):
     reply = "Thank you, your number is confirmed."
 
     lowlevel.send_sms(sender, member_number, reply)
+
+    audit_log.log(
+        audit_log.Kind.MEMBER_NUMBER_VERIFIED,
+        description=f"{pending_member_record.name} verified their number.",
+        event=pending_member_record.event,
+    )
 
     return True

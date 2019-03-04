@@ -3,12 +3,7 @@
 {% block title %}{{event.name}}{% endblock %}
 
 {% block content %}
-<div class="tabs">
-  <ul>
-    <li><a href="{{url_for('.details', event_slug=event.slug)}}">Details</a></li>
-    <li class="is-active"><a href="{{url_for('.numbers', event_slug=event.slug)}}">Numbers</a></li>
-  </ul>
-</div>
+{% include "nav.html" %}
 {% endblock %}
 
 {% block extra_sections %}

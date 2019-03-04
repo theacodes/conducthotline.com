@@ -15,6 +15,8 @@
 """Low-level database primitives. Moved here to prevent bleeding db-specific
 stuff into the higher-level interface."""
 
+import datetime
+
 import peewee
 
 import hotline.chatroom
@@ -81,3 +83,12 @@ class ChatroomConnection(BaseModel):
 
     class Meta:
         primary_key = peewee.CompositeKey("user_number", "relay_number")
+
+
+class AuditLog(BaseModel):
+    timestamp = peewee.DateTimeField(default=datetime.datetime.utcnow)
+    kind = peewee.IntegerField()
+    description = peewee.TextField(null=True)
+    event = peewee.ForeignKeyField(Event, backref="auditlogs", null=True)
+    user = peewee.CharField(null=True)
+    metadata = peewee.TextField(null=True)

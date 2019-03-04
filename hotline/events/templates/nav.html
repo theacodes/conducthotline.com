@@ -1,0 +1,13 @@
+{%- macro nav_item(url, title) -%}
+    <li {% if request.path == url %}class="is-active"{%endif %}>
+        <a href="{{url}}">{{title}}</a>
+    </li>
+{%- endmacro -%}
+
+<div class="tabs">
+  <ul>
+    {{nav_item(url_for('.details', event_slug=event.slug), "Details")}}
+    {{nav_item(url_for('.numbers', event_slug=event.slug), "Numbers")}}
+    {{nav_item(url_for('.logs', event_slug=event.slug), "Logs")}}
+  </ul>
+</div>

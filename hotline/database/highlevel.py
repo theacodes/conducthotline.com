@@ -76,6 +76,10 @@ def remove_event_member(event_slug: str, member_id: str) -> None:
     models.EventMember.get(models.EventMember.id == int(member_id)).delete_instance()
 
 
+def get_member(member_id: str) -> models.EventMember:
+    return models.EventMember.get_by_id(member_id)
+
+
 def get_member_by_number(member_number) -> Optional[models.EventMember]:
     try:
         return models.EventMember.get(models.EventMember.number == member_number)
@@ -106,7 +110,7 @@ def find_unused_event_numbers() -> List[models.Number]:
     )
 
 
-def acquire_number(event_slug: str = None) -> models.Event:
+def acquire_number(event_slug: str = None) -> str:
     with models.db.atomic():
         event = models.Event.get(models.Event.slug == event_slug)
         numbers = find_unused_event_numbers()
@@ -118,7 +122,7 @@ def acquire_number(event_slug: str = None) -> models.Event:
 
         event.save()
 
-        return event
+        return event.primary_number
 
 
 def find_unused_relay_number(event_number, organizer_number) -> Optional[str]:
@@ -180,3 +184,11 @@ def find_room_by_user_and_relay_numbers(
 
     except peewee.DoesNotExist:
         return None
+
+
+def get_logs_for_event(event: models.Event):
+    return (
+        models.AuditLog.select()
+        .where(models.AuditLog.event == event)
+        .order_by(-models.AuditLog.timestamp)
+    )

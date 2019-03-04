@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}{{event.name}}{% endblock %}
+
+{% block content %}
+{% include "nav.html" %}
+
+<table class="table is-fullwidth is-striped is-hoverable">
+  <thead>
+    <tr>
+      <th>When</th>
+      <th>Kind</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for log in logs %}
+    <tr>
+      <td>{{log.timestamp.isoformat()}}</td>
+      <td>{{log.kind}}</td>
+      <td>{{log.description}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

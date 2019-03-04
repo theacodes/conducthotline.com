@@ -20,6 +20,7 @@ initiating a *new* chatroom when a reporter messages an event's number.
 """
 
 import hotline.chatroom
+from hotline import audit_log
 from hotline.database import highlevel as db
 from hotline.database import models
 
@@ -82,6 +83,13 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
 
     # Save the chatroom.
     db.save_room(chatroom, event=event)
+
+    audit_log.log(
+        audit_log.Kind.SMS_CONVERSATION_STARTED,
+        description=f"A new sms conversation was started last 4 digits of number is {reporter_number[-4:]}",
+        event=event,
+    )
+
     return chatroom
 
 
