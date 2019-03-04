@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import functools
+
 import flask
 
 import hotline.database.ext
@@ -23,6 +25,22 @@ from hotline.events import forms
 
 blueprint = flask.Blueprint("events", __name__, template_folder="templates")
 hotline.database.ext.init_app(blueprint)
+
+
+def event_access_required(view):
+    @functools.wraps(view)
+    @auth_required
+    def check_access_decorator(event_slug, *args, **kwargs):
+        event = db.get_event(event_slug)
+
+        if event.owner_user_id != flask.g.user["user_id"]:
+            flask.abort(403)
+
+        kwargs["event"] = event
+        kwargs["user"] = flask.g.user
+        return view(*args, **kwargs)
+
+    return check_access_decorator
 
 
 @blueprint.route("/events")
@@ -56,18 +74,9 @@ def add():
     return flask.render_template("add.html", form=form)
 
 
-def _verify_access(event) -> str:
-    user_id = flask.g.user["user_id"]
-    if event.owner_user_id != user_id:
-        flask.abort(403)
-    return user_id
-
-
 @blueprint.route("/events/<event_slug>/details", methods=["GET", "POST"])
-@auth_required
-def details(event_slug):
-    event = db.get_event(event_slug)
-    user_id = _verify_access(event)
+@event_access_required
+def details(event, user):
     form = forms.EventEditForm(flask.request.form, event)
 
     if flask.request.method == "POST" and form.validate():
@@ -78,17 +87,15 @@ def details(event_slug):
             audit_log.Kind.EVENT_MODIFIED,
             description=f"{flask.g.user['name']} updated the event details.",
             event=event,
-            user=user_id,
+            user=user["user_id"],
         )
 
     return flask.render_template("edit.html", event=event, form=form)
 
 
 @blueprint.route("/events/<event_slug>/numbers", methods=["GET", "POST"])
-@auth_required
-def numbers(event_slug):
-    event = db.get_event(event_slug)
-    _verify_access(event)
+@event_access_required
+def numbers(event, user):
     members = db.get_event_members(event)
     form = forms.AddMemberForm()
     return flask.render_template(
@@ -97,13 +104,11 @@ def numbers(event_slug):
 
 
 @blueprint.route("/events/<event_slug>/members", methods=["POST"])
-@auth_required
-def add_member(event_slug):
-    event = db.get_event(event_slug)
-    user_id = _verify_access(event)
+@event_access_required
+def add_member(event, user):
     form = forms.AddMemberForm(flask.request.form)
 
-    member = db.new_event_member(event_slug)
+    member = db.new_event_member(event)
     form.populate_obj(member)
     member.save()
 
@@ -111,41 +116,35 @@ def add_member(event_slug):
         audit_log.Kind.MEMBER_ADDED,
         description=f"{flask.g.user['name']} added {member.name}.",
         event=event,
-        user=user_id,
+        user=user["user_id"],
     )
 
     # Start the verification process.
     hotline.telephony.verification.start_member_verification(member)
 
-    return flask.redirect(flask.url_for(".numbers", event_slug=event_slug))
+    return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
 
 
 @blueprint.route("/events/<event_slug>/members/remove/<member_id>")
-@auth_required
-def remove_member(event_slug, member_id):
-    event = db.get_event(event_slug)
-    user_id = _verify_access(event)
-
+@event_access_required
+def remove_member(member_id, event, user):
     member = db.get_member(member_id)
 
-    db.remove_event_member(event_slug, member_id)
+    db.remove_event_member(member_id)
 
     audit_log.log(
         audit_log.Kind.MEMBER_REMOVED,
         description=f"{flask.g.user['name']} removed {member.name}.",
         event=event,
-        user=user_id,
+        user=user["user_id"],
     )
 
-    return flask.redirect(flask.url_for(".numbers", event_slug=event_slug))
+    return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
 
 
 @blueprint.route("/events/<event_slug>/release")
-@auth_required
-def release(event_slug):
-    event = db.get_event(event_slug)
-    user_id = _verify_access(event)
-
+@event_access_required
+def release(event, user):
     previous_number = event.primary_number
     event.primary_number = None
     event.primary_number_id = None
@@ -155,36 +154,30 @@ def release(event_slug):
         audit_log.Kind.NUMBER_RELEASED,
         description=f"{flask.g.user['name']} released the number {previous_number}",
         event=event,
-        user=user_id,
+        user=user["user_id"],
     )
 
-    return flask.redirect(flask.url_for(".numbers", event_slug=event_slug))
+    return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
 
 
 @blueprint.route("/events/<event_slug>/acquire")
-@auth_required
-def acquire(event_slug):
-    event = db.get_event(event_slug)
-    user_id = _verify_access(event)
-
-    new_number = db.acquire_number(event_slug)
+@event_access_required
+def acquire(event, user):
+    new_number = db.acquire_number(event)
 
     audit_log.log(
         audit_log.Kind.NUMBER_ACQUIRED,
         description=f"{flask.g.user['name']} acquired the number {new_number}",
         event=event,
-        user=user_id,
+        user=user["user_id"],
     )
 
-    return flask.redirect(flask.url_for(".numbers", event_slug=event_slug))
+    return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
 
 
 @blueprint.route("/events/<event_slug>/logs")
-@auth_required
-def logs(event_slug):
-    event = db.get_event(event_slug)
-    _verify_access(event)
-
+@event_access_required
+def logs(event, user):
     logs = db.get_logs_for_event(event)
 
     return flask.render_template("logs.html", event=event, logs=logs)

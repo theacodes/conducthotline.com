@@ -65,14 +65,14 @@ def get_verified_event_members(event) -> Iterable[models.EventMember]:
     yield from query
 
 
-def new_event_member(event_slug: str) -> models.EventMember:
+def new_event_member(event: models.Event) -> models.EventMember:
     member = models.EventMember()
-    member.event = get_event(event_slug)
+    member.event = event
     member.verified = False
     return member
 
 
-def remove_event_member(event_slug: str, member_id: str) -> None:
+def remove_event_member(member_id: str) -> None:
     models.EventMember.get(models.EventMember.id == int(member_id)).delete_instance()
 
 
@@ -110,9 +110,8 @@ def find_unused_event_numbers() -> List[models.Number]:
     )
 
 
-def acquire_number(event_slug: str = None) -> str:
+def acquire_number(event: models.Event) -> str:
     with models.db.atomic():
-        event = models.Event.get(models.Event.slug == event_slug)
         numbers = find_unused_event_numbers()
 
         # TODO: Check for no available numbers

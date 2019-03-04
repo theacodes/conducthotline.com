@@ -54,7 +54,7 @@ def inbound_call(client):
         event_number=event_number,
         conversation_uuid=conversation_uuid,
         call_uuid=call_uuid,
-        host=flask.request.host
+        host=flask.request.host,
     )
 
     return flask.jsonify(ncco)
