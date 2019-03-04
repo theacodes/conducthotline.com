@@ -17,7 +17,7 @@
 import json
 import os
 
-import hotline.database.lowlevel
+import hotline.database
 from hotline import injector
 
 
@@ -31,7 +31,7 @@ def _load_secrets():
 
 def _initialize_resources():
     # Initialize the database, now that we have configuration.
-    hotline.database.lowlevel.initialize_db()
+    hotline.database.initialize_db()
 
 
 def load():

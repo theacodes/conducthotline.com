@@ -15,16 +15,16 @@
 """Flask extension for database stuff."""
 
 
-from hotline.database import lowlevel
+from hotline.database import models
 
 
 def _db_connect():
-    lowlevel.db.connect()
+    models.db.connect()
 
 
 def _db_close(response):
-    if not lowlevel.db.is_closed():
-        lowlevel.db.close()
+    if not models.db.is_closed():
+        models.db.close()
 
 
 def init_app(app):

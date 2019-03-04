@@ -17,93 +17,98 @@
 from typing import Iterable, List, Optional
 
 import peewee
+import playhouse.db_url
 
 import hotline.chatroom
-from hotline.database import lowlevel
+from hotline import injector
+from hotline.database import models
 
 
-def list_events(user_id: str) -> Iterable[lowlevel.Event]:
+@injector.needs("secrets.database")
+def initialize_db(database):
+    models.db.initialize(playhouse.db_url.connect(database))
+
+
+def list_events(user_id: str) -> Iterable[models.Event]:
     query = (
-        lowlevel.Event.select()
-        .where(lowlevel.Event.owner_user_id == user_id)
-        .order_by(lowlevel.Event.name)
+        models.Event.select()
+        .where(models.Event.owner_user_id == user_id)
+        .order_by(models.Event.name)
     )
     yield from query
 
 
-def new_event(user_id: str) -> lowlevel.Event:
-    event = lowlevel.Event()
+def new_event(user_id: str) -> models.Event:
+    event = models.Event()
     event.owner_user_id = user_id
     return event
 
 
-def get_event(event_slug: str) -> lowlevel.Event:
-    return lowlevel.Event.get(lowlevel.Event.slug == event_slug)
+def get_event(event_slug: str) -> models.Event:
+    return models.Event.get(models.Event.slug == event_slug)
 
 
-def get_event_by_number(number: str) -> Optional[lowlevel.Event]:
+def get_event_by_number(number: str) -> Optional[models.Event]:
     try:
-        return lowlevel.Event.get(lowlevel.Event.primary_number == number)
+        return models.Event.get(models.Event.primary_number == number)
     except peewee.DoesNotExist:
         return None
 
 
-def get_event_members(event) -> Iterable[lowlevel.EventMember]:
+def get_event_members(event) -> Iterable[models.EventMember]:
     query = event.members
     yield from query
 
 
-def get_verified_event_members(event) -> Iterable[lowlevel.EventMember]:
-    query = event.members.where(lowlevel.EventMember.verified == True)  # noqa
+def get_verified_event_members(event) -> Iterable[models.EventMember]:
+    query = event.members.where(models.EventMember.verified == True)  # noqa
     yield from query
 
 
-def new_event_member(event_slug: str) -> lowlevel.EventMember:
-    member = lowlevel.EventMember()
+def new_event_member(event_slug: str) -> models.EventMember:
+    member = models.EventMember()
     member.event = get_event(event_slug)
     member.verified = False
     return member
 
 
 def remove_event_member(event_slug: str, member_id: str) -> None:
-    lowlevel.EventMember.get(
-        lowlevel.EventMember.id == int(member_id)
-    ).delete_instance()
+    models.EventMember.get(models.EventMember.id == int(member_id)).delete_instance()
 
 
-def get_member_by_number(member_number) -> Optional[lowlevel.EventMember]:
+def get_member_by_number(member_number) -> Optional[models.EventMember]:
     try:
-        return lowlevel.EventMember.get(lowlevel.EventMember.number == member_number)
+        return models.EventMember.get(models.EventMember.number == member_number)
     except peewee.DoesNotExist:
         return None
 
 
-def find_pending_member_by_number(member_number) -> Optional[lowlevel.EventMember]:
+def find_pending_member_by_number(member_number) -> Optional[models.EventMember]:
     try:
-        return lowlevel.EventMember.get(
-            lowlevel.EventMember.number == member_number,
-            lowlevel.EventMember.verified == False,
+        return models.EventMember.get(
+            models.EventMember.number == member_number,
+            models.EventMember.verified == False,
         )  # noqa
     except peewee.DoesNotExist:
         return None
 
 
-def find_unused_event_numbers() -> List[lowlevel.Number]:
+def find_unused_event_numbers() -> List[models.Number]:
     return list(
-        lowlevel.Number.select()
+        models.Number.select()
         .join(
-            lowlevel.Event,
+            models.Event,
             peewee.JOIN.LEFT_OUTER,
-            on=(lowlevel.Event.primary_number_id == lowlevel.Number.id),
+            on=(models.Event.primary_number_id == models.Number.id),
         )
-        .where(lowlevel.Event.primary_number_id.is_null())
+        .where(models.Event.primary_number_id.is_null())
         .limit(5)
     )
 
 
-def acquire_number(event_slug: str = None) -> lowlevel.Event:
-    with lowlevel.db.atomic():
-        event = lowlevel.Event.get(lowlevel.Event.slug == event_slug)
+def acquire_number(event_slug: str = None) -> models.Event:
+    with models.db.atomic():
+        event = models.Event.get(models.Event.slug == event_slug)
         numbers = find_unused_event_numbers()
 
         # TODO: Check for no available numbers
@@ -121,9 +126,9 @@ def find_unused_relay_number(event_number, organizer_number) -> Optional[str]:
     connection."""
     # TODO: Should probably be a join, but its unlikely this list will
     # get big enough in the near future to be an issue.
-    used_relay_numbers_query = lowlevel.ChatroomConnection.select(
-        lowlevel.ChatroomConnection.relay_number
-    ).where(lowlevel.ChatroomConnection.user_number == organizer_number)
+    used_relay_numbers_query = models.ChatroomConnection.select(
+        models.ChatroomConnection.relay_number
+    ).where(models.ChatroomConnection.user_number == organizer_number)
 
     used_relay_numbers = [row.relay_number for row in used_relay_numbers_query]
 
@@ -133,8 +138,8 @@ def find_unused_relay_number(event_number, organizer_number) -> Optional[str]:
     used_relay_numbers.append(event_number)
 
     unused_number_query = (
-        lowlevel.Number.select(lowlevel.Number.number)
-        .where(lowlevel.Number.number.not_in(used_relay_numbers))
+        models.Number.select(models.Number.number)
+        .where(models.Number.number.not_in(used_relay_numbers))
         .limit(1)
     )
 
@@ -148,12 +153,12 @@ def find_unused_relay_number(event_number, organizer_number) -> Optional[str]:
         return numbers[0]
 
 
-def save_room(room: hotline.chatroom.Chatroom, event: lowlevel.Event) -> None:
-    with lowlevel.db.atomic():
-        room_row = lowlevel.Chatroom.create(event=event, room=room)
+def save_room(room: hotline.chatroom.Chatroom, event: models.Event) -> None:
+    with models.db.atomic():
+        room_row = models.Chatroom.create(event=event, room=room)
 
         for connection in room.users:
-            lowlevel.ChatroomConnection.create(
+            models.ChatroomConnection.create(
                 user_number=connection.number,
                 relay_number=connection.relay,
                 user_name=connection.name,
@@ -165,9 +170,9 @@ def find_room_by_user_and_relay_numbers(
     user_number: str, relay_number: str
 ) -> Optional[hotline.chatroom.Chatroom]:
     try:
-        connection = lowlevel.ChatroomConnection.get(
-            lowlevel.ChatroomConnection.user_number == user_number,
-            lowlevel.ChatroomConnection.relay_number == relay_number,
+        connection = models.ChatroomConnection.get(
+            models.ChatroomConnection.user_number == user_number,
+            models.ChatroomConnection.relay_number == relay_number,
         )
 
         # This could be faster with a join, but I'm not terribly worried about speed right now.

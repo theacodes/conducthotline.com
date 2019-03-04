@@ -19,13 +19,9 @@ chat room. This is further tailored specifically to the conduct hotline by
 initiating a *new* chatroom when a reporter messages an event's number.
 """
 
-from typing import Optional
-
-import peewee
-
 import hotline.chatroom
 from hotline.database import highlevel as db
-from hotline.database import lowlevel as models
+from hotline.database import models
 
 
 class SmsChatError(Exception):

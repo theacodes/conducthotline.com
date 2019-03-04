@@ -15,21 +15,15 @@
 """Recreates database tables / does migrations."""
 
 import hotline.config
-from hotline.database import lowlevel
+from hotline.database import models as db
 
-models = [
-    lowlevel.Number,
-    lowlevel.Event,
-    lowlevel.EventMember,
-    lowlevel.Chatroom,
-    lowlevel.ChatroomConnection,
-]
+models = [db.Number, db.Event, db.EventMember, db.Chatroom, db.ChatroomConnection]
 
 
 def create_tables():
-    with lowlevel.db:
-        lowlevel.db.drop_tables(models)
-        lowlevel.db.create_tables(models)
+    with db.db:
+        db.db.drop_tables(models)
+        db.db.create_tables(models)
 
 
 if __name__ == "__main__":

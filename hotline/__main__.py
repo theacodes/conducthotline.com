@@ -15,7 +15,6 @@
 import logging
 
 import hotline.config
-import hotline.database.lowlevel
 from hotline.app import app
 
 logging.basicConfig(level=logging.INFO)

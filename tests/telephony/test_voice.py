@@ -17,15 +17,15 @@ from unittest import mock
 import nexmo
 import pytest
 
-from hotline.database import create_tables
-from hotline.database import lowlevel as db
+from hotline.database import create_tables, highlevel
+from hotline.database import models as db
 from hotline.telephony import voice
 
 
 @pytest.fixture
 def database(tmpdir):
     db_file = tmpdir.join("database.sqlite")
-    db.initialize_db(database=f"sqlite:///{db_file}")
+    highlevel.initialize_db(database=f"sqlite:///{db_file}")
 
     create_tables.create_tables()
 
