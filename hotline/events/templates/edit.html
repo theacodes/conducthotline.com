@@ -5,7 +5,7 @@
 {% block content %}
 {% include "nav.html" %}
 
-<form method="POST">
+<form method="POST" action="{{url_for(request.endpoint, event_slug=event.slug)}}">
   {% for field in form %}
     <div class="field">
       <label class="label">{{ field.label() }}</label>

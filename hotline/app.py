@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import flask
+import phonenumbers
 
 import hotline.auth.webhandlers
 import hotline.events.webhandlers
@@ -22,6 +23,17 @@ app = flask.Flask(__name__)
 app.register_blueprint(hotline.telephony.webhandlers.blueprint)
 app.register_blueprint(hotline.auth.webhandlers.blueprint)
 app.register_blueprint(hotline.events.webhandlers.blueprint)
+
+
+@app.template_filter("phone")
+def phone_format_filter(s):
+    try:
+        number = phonenumbers.parse(s, "US")
+        return phonenumbers.format_number(
+            number, phonenumbers.PhoneNumberFormat.INTERNATIONAL
+        )
+    except phonenumbers.NumberParseException:
+        return s
 
 
 # Add a default root route.

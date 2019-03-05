@@ -138,8 +138,6 @@ def find_unused_relay_number(event_number, organizer_number) -> Optional[str]:
 
     used_relay_numbers = [row.relay_number for row in used_relay_numbers_query]
 
-    print("Used relay numbers: ", used_relay_numbers)
-
     # Don't use the event number as a relay number
     used_relay_numbers.append(event_number)
 
@@ -150,8 +148,6 @@ def find_unused_relay_number(event_number, organizer_number) -> Optional[str]:
     )
 
     numbers = [row.number for row in unused_number_query]
-
-    print("Available relay numbers: ", numbers)
 
     if not numbers:
         return None

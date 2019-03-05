@@ -15,7 +15,7 @@
         Your hotline is active. ✨
       </h1>
       <h2 class="subtitle">
-        Your hotline's number is <strong>{{event.primary_number}}</strong>.
+        Your hotline's number is <strong>{{event.primary_number|phone}}</strong>.
       </h2>
       <p>
         You may release your event's number if you no longer need it or need
@@ -65,7 +65,7 @@
         {% for member in members %}
         <tr>
           <td>{{member.name|e}}</td>
-          <td>{{member.number|e}}</td>
+          <td>{{member.number|e|phone}}</td>
           <th>{{member.verified}}</th>
           <th class="has-text-right">
             <a class="button is-danger" href="{{url_for('.remove_member', event_slug=event.slug, member_id=member.id)}}">Remove</a>
@@ -82,7 +82,7 @@
     <h2 class="title">Add member</h2>
     <h3 class="subtitle">Members must verify their number before the hotline will contact them.</h3>
 
-    <form method="POST" action="{{url_for('.add_member', event_slug=event.slug)}}">
+    <form method="POST" action="{{url_for(request.endpoint, event_slug=event.slug)}}">
       {% for field in form %}
         <div class="field">
           <label class="label">{{ field.label() }}</label>

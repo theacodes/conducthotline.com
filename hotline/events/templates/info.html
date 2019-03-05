@@ -6,7 +6,7 @@
   <div class="hero-body">
     <div class="container has-text-centered is-large">
       <h1 class="title">
-        {{event.name}}
+        {{event.name|e}}
       </h1>
       <h2 class="subtitle">
         Code of Conduct Hotline
@@ -15,8 +15,8 @@
       {% if event.primary_number %}
       <div class="info-section">
         <p class="is-size-1">
-          <a class="" href="tel:{{event.primary_number}}">
-            {{event.primary_number}}
+          <a class="" href="tel:{{event.primary_number|e|phone}}">
+            {{event.primary_number|e|phone}}
           </a>
         </p>
         <p>
@@ -26,9 +26,7 @@
       {% else %}
       <div class="info-section">
         <p class="is-size-1">
-          <a class="" href="tel:{{event.primary_number}}">
-            No number configured
-          </a>
+          No number configured
         </p>
         <p>
           Contact the event organizers for assistance
@@ -39,8 +37,8 @@
       {% if event.contact_email %}
       <div class="info-section">
         <p class="is-size-4">
-          <a class="" href="mailtro:{{event.contact_email}}">
-            conduct@pycascades.com
+          <a class="" href="mailtro:{{event.contact_email|e}}">
+            {{event.contact_email|e}}
           </a>
         </p>
         <p>
@@ -52,13 +50,13 @@
       <div class="info-section">
         {% if event.location %}
         <p>
-          {{event.location}}
+          {{event.location|e}}
         </p>
         {% endif %}
 
         <p>
           {% if event.coc_link %}
-            <a href="{{event.coc_link}}" target="_blank" rel="nofollower">
+            <a href="{{event.coc_link|e}}" target="_blank" rel="nofollower">
               Code of Conduct
             </a>
           {% endif %}
@@ -66,7 +64,7 @@
             &middot;
           {% endif %}
           {% if event.website %}
-            <a href="{{event.website}}" target="_blank" rel="nofollower">
+            <a href="{{event.website|e}}" target="_blank" rel="nofollower">
               Website
             </a>
           {% endif %}

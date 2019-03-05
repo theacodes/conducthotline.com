@@ -16,8 +16,14 @@
 sending messages."""
 
 import nexmo
+import phonenumbers
 
 from hotline import injector
+
+
+def normalize_number(value: str) -> str:
+    number = phonenumbers.parse(value, "US")
+    return phonenumbers.format_number(number, phonenumbers.PhoneNumberFormat.E164)
 
 
 @injector.provides(
@@ -55,7 +61,12 @@ def rent_number(client: nexmo.Client, country_code: str = "US") -> dict:
             client.buy_number(
                 {"country": number["country"], "msisdn": number["msisdn"]}
             )
+
+            # Normalize the number.
+            number["msisdn"] = normalize_number(number["msisdn"])
+
             return number
+
         except nexmo.Error as error:
             continue
 

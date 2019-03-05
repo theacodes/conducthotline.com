@@ -70,8 +70,6 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
     organizer_number = organizers[0].number
     relay_number = db.find_unused_relay_number(event.primary_number, organizer_number)
 
-    print("Relay number: ", relay_number)
-
     if not relay_number:
         raise NoRelaysAvailable()
 

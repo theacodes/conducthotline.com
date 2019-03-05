@@ -110,32 +110,30 @@ def details(event, user):
 @event_access_required
 def numbers(event, user):
     members = db.get_event_members(event)
-    form = forms.AddMemberForm()
+    form = forms.AddMemberForm(flask.request.form)
+
+    if flask.request.method == "POST" and form.validate():
+        member = db.new_event_member(event)
+        form.populate_obj(member)
+        member.save()
+
+        audit_log.log(
+            audit_log.Kind.MEMBER_ADDED,
+            description=f"{flask.g.user['name']} added {member.name}.",
+            event=event,
+            user=user["user_id"],
+        )
+
+        # Start the verification process.
+        hotline.telephony.verification.start_member_verification(member)
+
+        return flask.redirect(
+            flask.url_for(flask.request.endpoint, event_slug=event.slug)
+        )
+
     return flask.render_template(
         "numbers.html", event=event, members=members, form=form
     )
-
-
-@blueprint.route("/events/<event_slug>/members", methods=["POST"])
-@event_access_required
-def add_member(event, user):
-    form = forms.AddMemberForm(flask.request.form)
-
-    member = db.new_event_member(event)
-    form.populate_obj(member)
-    member.save()
-
-    audit_log.log(
-        audit_log.Kind.MEMBER_ADDED,
-        description=f"{flask.g.user['name']} added {member.name}.",
-        event=event,
-        user=user["user_id"],
-    )
-
-    # Start the verification process.
-    hotline.telephony.verification.start_member_verification(member)
-
-    return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
 
 
 @blueprint.route("/events/<event_slug>/members/remove/<member_id>")

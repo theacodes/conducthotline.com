@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import phonenumbers
 import wtforms
 
 
@@ -30,8 +31,25 @@ class EventEditForm(wtforms.Form):
     location = wtforms.StringField()
 
 
+def validate_phone_number(form, field):
+    try:
+        number = phonenumbers.parse(field.data, "US")
+
+    except phonenumbers.NumberParseException:
+        raise wtforms.ValidationError(
+            f"{field.data} does not appear to be a valid number."
+        )
+
+    if not phonenumbers.is_possible_number(number):
+        raise wtforms.ValidationError(
+            f"{field.data} does not appear to be a possible number."
+        )
+
+    field.data = phonenumbers.format_number(number, phonenumbers.PhoneNumberFormat.E164)
+
+
 class AddMemberForm(wtforms.Form):
     name = wtforms.StringField("Name", validators=[wtforms.validators.InputRequired()])
     number = wtforms.StringField(
-        "Number", validators=[wtforms.validators.InputRequired()]
+        "Number", validators=[wtforms.validators.InputRequired(), validate_phone_number]
     )
