@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
 
+{% block html_title %}{{event.name}} Code of Conduct Hotline{% endblock %}
+
 {% block html_body %}
 
 <section class="event-info hero is-primary is-fullheight">
@@ -78,9 +80,9 @@
     <nav class="tabs is-right">
       <div class="container">
         <ul>
-          <li><a>FAQ</a></li>
-          <li><a>Privacy</a></li>
-          <li><a>About</a></li>
+          <li><a href="{{url_for("pages.view_page", name="about")}}">About</a></li>
+          <li><a href="{{url_for("pages.view_page", name="faq")}}">FAQ</a></li>
+          <li><a href="{{url_for("pages.view_page", name="privacy")}}">Privacy</a></li>
         </ul>
       </div>
     </nav>

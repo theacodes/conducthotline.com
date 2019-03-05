@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block html_body %}
+{%- macro nav_item(url, title) -%}
+    <li {% if request.path == url %}class="is-active"{%endif %}>
+        <a href="{{url}}">{{title}}</a>
+    </li>
+{%- endmacro -%}
+
+<div class="container">
+  <div class="tabs is-right">
+    <ul>
+      {{nav_item(url_for(".view_page", name="about"), "About")}}
+      {{nav_item(url_for(".view_page", name="faq"), "FAQ")}}
+      {{nav_item(url_for(".view_page", name="privacy"), "Privacy")}}
+    </ul>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container content is-large">
+    {{content|safe}}
+  </div>
+</section>
+{% endblock %}
