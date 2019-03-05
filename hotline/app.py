@@ -30,6 +30,11 @@ def index():
     return "Hello"
 
 
+@app.errorhandler(404)
+def not_found(e):
+    return flask.render_template("404.html")
+
+
 @app.errorhandler(500)
 def server_error(e):
     """TODO: Disable in production."""

@@ -44,8 +44,11 @@ def new_event(user_id: str) -> models.Event:
     return event
 
 
-def get_event(event_slug: str) -> models.Event:
-    return models.Event.get(models.Event.slug == event_slug)
+def get_event_by_slug(event_slug: str) -> Optional[models.Event]:
+    try:
+        return models.Event.get(models.Event.slug == event_slug)
+    except peewee.DoesNotExist:
+        return None
 
 
 def get_event_by_number(number: str) -> Optional[models.Event]:

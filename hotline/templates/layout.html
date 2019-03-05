@@ -3,47 +3,15 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>conducthotline.com</title>
+    <title>conducthotline.com {% block html_title %}{% endblock %}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
     <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block html_head %}{% endblock %}
   </head>
   <body>
 
-  <!-- nav -->
-  <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
-      <a class="navbar-item" href="/">
-        ConductHotline.com
-      </a>
-    </div>
+  {% block html_body %}{% endblock %}
 
-    <div id="navbarItems" class="navbar-menu is-active">
-      <div class="navbar-start">
-        <a class="navbar-item" href="{{url_for('events.list')}}">
-          Events
-        </a>
-      </div>
-
-      <div class="navbar-end">
-        <a class="navbar-item" href="/auth/logout">
-          <span>{{g.user.name}}</span>
-          <figure class="image is-32x32">
-            <img class="is-rounded" style="max-height: none;" src="{{g.user.picture}}">
-          </figure>
-        </a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Main content -->
-  <section class="section">
-    <div class="container">
-      <h1 class="title">
-        {% block title %}{% endblock %}
-      </h1>
-      {% block content %}{% endblock %}
-    </div>
-  </section>
-  {% block extra_sections %}{% endblock %}
   </body>
 </html>

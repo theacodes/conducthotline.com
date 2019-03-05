@@ -31,7 +31,10 @@ def event_access_required(view):
     @functools.wraps(view)
     @auth_required
     def check_access_decorator(event_slug, *args, **kwargs):
-        event = db.get_event(event_slug)
+        event = db.get_event_by_slug(event_slug)
+
+        if event is None:
+            flask.abort(404)
 
         if event.owner_user_id != flask.g.user["user_id"]:
             flask.abort(403)
@@ -41,6 +44,16 @@ def event_access_required(view):
         return view(*args, **kwargs)
 
     return check_access_decorator
+
+
+@blueprint.route("/e/<event_slug>")
+def info(event_slug):
+    event = db.get_event_by_slug(event_slug)
+
+    if event is None:
+        flask.abort(404)
+
+    return flask.render_template("info.html", event=event)
 
 
 @blueprint.route("/events")
@@ -180,4 +193,6 @@ def acquire(event, user):
 def logs(event, user):
     logs = db.get_logs_for_event(event)
 
-    return flask.render_template("logs.html", event=event, logs=logs, Kind=audit_log.Kind)
+    return flask.render_template(
+        "logs.html", event=event, logs=logs, Kind=audit_log.Kind
+    )

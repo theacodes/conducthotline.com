@@ -6,6 +6,7 @@
 
 <div class="tabs">
   <ul>
+    {{nav_item(url_for('.info', event_slug=event.slug), "Public view")}}
     {{nav_item(url_for('.details', event_slug=event.slug), "Details")}}
     {{nav_item(url_for('.numbers', event_slug=event.slug), "Numbers")}}
     {{nav_item(url_for('.logs', event_slug=event.slug), "Logs")}}

@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+
+{% block html_body %}
+
+<section class="event-info hero is-primary is-fullheight">
+  <div class="hero-body">
+    <div class="container has-text-centered is-large">
+      <h1 class="title">
+        {{event.name}}
+      </h1>
+      <h2 class="subtitle">
+        Code of Conduct Hotline
+      </h2>
+
+      {% if event.primary_number %}
+      <div class="info-section">
+        <p class="is-size-1">
+          <a class="" href="tel:{{event.primary_number}}">
+            {{event.primary_number}}
+          </a>
+        </p>
+        <p>
+          <strong>Call</strong> or <strong>Text</strong>
+        </p>
+      </div>
+      {% else %}
+      <div class="info-section">
+        <p class="is-size-1">
+          <a class="" href="tel:{{event.primary_number}}">
+            No number configured
+          </a>
+        </p>
+        <p>
+          Contact the event organizers for assistance
+        </p>
+      </div>
+      {% endif %}
+
+      {% if event.contact_email %}
+      <div class="info-section">
+        <p class="is-size-4">
+          <a class="" href="mailtro:{{event.contact_email}}">
+            conduct@pycascades.com
+          </a>
+        </p>
+        <p>
+          <strong>Email</strong>
+        </p>
+      </div>
+      {% endif %}
+
+      <div class="info-section">
+        {% if event.location %}
+        <p>
+          {{event.location}}
+        </p>
+        {% endif %}
+
+        <p>
+          {% if event.coc_link %}
+            <a href="{{event.coc_link}}" target="_blank" rel="nofollower">
+              Code of Conduct
+            </a>
+          {% endif %}
+          {% if event.coc_link and event.website %}
+            &middot;
+          {% endif %}
+          {% if event.website %}
+            <a href="{{event.website}}" target="_blank" rel="nofollower">
+              Website
+            </a>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero footer: will stick at the bottom -->
+  <div class="hero-foot">
+    <nav class="tabs is-right">
+      <div class="container">
+        <ul>
+          <li><a>FAQ</a></li>
+          <li><a>Privacy</a></li>
+          <li><a>About</a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+</section>
+
+{% endblock %}
