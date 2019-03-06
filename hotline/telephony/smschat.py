@@ -89,6 +89,20 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
         event=event,
     )
 
+    # Send welcome messages.
+    lowlevel.send_sms(
+        sender=event_number,
+        to=reporter_number,
+        message=f"You have started a new chat with the organizers of {event.name}.",
+    )
+
+    for organizer in organizers:
+        lowlevel.send_sms(
+            sender=relay_number,
+            to=organizer.number,
+            message=f"This is the beginning of a new chat for {event.name}, the last 4 digits of the reporters number are {reporter_number[-4:]}.",
+        )
+
     return chatroom
 
 

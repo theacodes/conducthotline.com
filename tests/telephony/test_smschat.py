@@ -126,11 +126,30 @@ def test_handle_message_new_chat(send_sms, database):
 
     smschat.handle_message("1234", "5678", "Hello")
 
-    # Two messages should have been sent to the two verified organizers.
-    # The sender should be the *first* relay number (1111)
-    assert send_sms.call_count == 2
+    # A total of 5 messages:
+    # The first should acknolwege the reporter.
+    # The next two should have been sent to the two verified organizers to
+    # introduce the chat.
+    # The last two should relay the reporter's message.
+    assert send_sms.call_count == 5
     send_sms.assert_has_calls(
         [
+            mock.call(
+                sender="5678",
+                to="1234",
+                message="You have started a new chat with the organizers of Test event.",
+            ),
+            # The sender should be the *first available* relay number (1111)
+            mock.call(
+                sender="1111",
+                to="101",
+                message="This is the beginning of a new chat for Test event, the last 4 digits of the reporters number are 1234.",
+            ),
+            mock.call(
+                sender="1111",
+                to="202",
+                message="This is the beginning of a new chat for Test event, the last 4 digits of the reporters number are 1234.",
+            ),
             mock.call(sender="1111", to="101", message="Reporter: Hello"),
             mock.call(sender="1111", to="202", message="Reporter: Hello"),
         ]
