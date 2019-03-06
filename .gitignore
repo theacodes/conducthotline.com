@@ -81,3 +81,4 @@ secrets.local.json
 secrets.test.json
 *service-account.json
 *.db
+*.pem
