@@ -23,6 +23,7 @@ import hotline.chatroom
 from hotline import audit_log
 from hotline.database import highlevel as db
 from hotline.database import models
+from hotline.telephony import lowlevel
 
 
 class SmsChatError(Exception):
@@ -109,3 +110,24 @@ def handle_message(sender: str, relay: str, message: str):
     room = _find_room(user_number=sender, relay_number=relay)
 
     room.relay(sender, message, hotline.telephony.lowlevel.send_sms)
+
+
+def handle_sms_chat_error(err: SmsChatError, sender: str, relay: str):
+    if isinstance(err, EventDoesNotExist):
+        lowlevel.send_sms(
+            sender=relay,
+            to=sender,
+            message="Sorry, there doesn't seem to be an event configured for that number.",
+        )
+    elif isinstance(err, NoOrganizersAvailable):
+        lowlevel.send_sms(
+            sender=relay,
+            to=sender,
+            message="Sorry, there aren't any organizers currently available. Please reach out to the event staff in person for assistance.",
+        )
+    elif isinstance(err, NoRelaysAvailable):
+        lowlevel.send_sms(
+            sender=relay,
+            to=sender,
+            message="Sorry, there aren't any relays available to send your message. You can try calling the hotline or reaching out to the event staff in person for assistance.",
+        )

@@ -185,3 +185,42 @@ def test_handle_message_reply(send_sms, database):
             mock.call(sender="1111", to="202", message="Bob: Goodbye"),
         ]
     )
+
+
+@mock.patch("hotline.telephony.lowlevel.send_sms", autospec=True)
+def test_handle_sms_chat_error_no_event(send_sms):
+    err = smschat.EventDoesNotExist()
+
+    smschat.handle_sms_chat_error(err, "1234", "5678")
+
+    send_sms.assert_called_once_with(sender="5678", to="1234", message=mock.ANY)
+
+    message = send_sms.mock_calls[0][2]["message"]
+
+    assert "event configured" in message
+
+
+@mock.patch("hotline.telephony.lowlevel.send_sms", autospec=True)
+def test_handle_sms_chat_error_no_organizers(send_sms):
+    err = smschat.NoOrganizersAvailable()
+
+    smschat.handle_sms_chat_error(err, "1234", "5678")
+
+    send_sms.assert_called_once_with(sender="5678", to="1234", message=mock.ANY)
+
+    message = send_sms.mock_calls[0][2]["message"]
+
+    assert "aren't any organizers" in message
+
+
+@mock.patch("hotline.telephony.lowlevel.send_sms", autospec=True)
+def test_handle_sms_chat_error_no_relays(send_sms):
+    err = smschat.NoRelaysAvailable()
+
+    smschat.handle_sms_chat_error(err, "1234", "5678")
+
+    send_sms.assert_called_once_with(sender="5678", to="1234", message=mock.ANY)
+
+    message = send_sms.mock_calls[0][2]["message"]
+
+    assert "aren't any relays" in message

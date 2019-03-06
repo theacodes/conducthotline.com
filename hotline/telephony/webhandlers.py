@@ -33,8 +33,11 @@ def inbound_sms():
     if verification.maybe_handle_verification(user_number, message_text):
         return "", 204
 
-    # It's not verification, so hand it off to SMS chat.
-    smschat.handle_message(user_number, relay_number, message_text)
+    # It's not verification, so hand it off to SMS chat
+    try:
+        smschat.handle_message(user_number, relay_number, message_text)
+    except smschat.SmsChatError as err:
+        smschat.handle_sms_chat_error(err, user_number, relay_number)
 
     return "", 204
 

@@ -66,7 +66,13 @@ def details(number):
 @blueprint.route("/admin/numbers/rent")
 @super_admin_required
 def rent():
-    hotline.telephony.lowlevel.rent_number(
+    number = hotline.telephony.lowlevel.rent_number(
         sms_callback_url=flask.url_for("telephony.inbound_sms", _external=True)
     )
+
+    number_record = models.Number()
+    number_record.number = number["msisdn"]
+    number_record.country = number["country"]
+    number_record.save()
+
     return flask.redirect(flask.url_for(".list"))

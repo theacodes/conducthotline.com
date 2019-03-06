@@ -15,9 +15,9 @@
 """Handles low-level telephony-related actions, such as renting numbers and
 sending messages."""
 
-from google.api_core import retry
 import nexmo
 import phonenumbers
+from google.api_core import retry
 
 from hotline import injector
 
@@ -104,7 +104,9 @@ def get_number_info(number: str, client: nexmo.Client) -> dict:
 
 
 def _send_sms_retry_predicate(error):
-    if isinstance(error, nexmo.ClientError) and "Throughput Rate Exceeded" in str(error):
+    if isinstance(error, nexmo.ClientError) and "Throughput Rate Exceeded" in str(
+        error
+    ):
         return True
     return False
 
