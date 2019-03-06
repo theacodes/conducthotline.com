@@ -1,0 +1,38 @@
+{% extends "admin-layout.html" %}
+
+{% block title %}Numbers{% endblock %}
+
+{% block content %}
+<dl>
+  <dt>Number</dt>
+  <dd>
+    {{number.number}}
+  </dd>
+
+  <dt>Country</dt>
+  <dd>
+    {{number.country}}
+  </dd>
+
+  <dt>Event</dt>
+  <dd>
+    {% if event %}
+      <a href="{{url_for('events.info', event_slug=event.slug)}}">
+        {{event.name}}
+      </a>
+    {% else %}
+      None
+    {% endif %}
+  </dd>
+
+  <dt>SMS Callback URL</dt>
+  <dd>
+    {{info.moHttpUrl}}
+  </dd>
+
+  <dt>Voice Callback</dt>
+  <dd>
+    {{info.voiceCallbackType}}: {{info.voiceCallbackValue}}
+  </dd>
+</dl>
+{% endblock %}

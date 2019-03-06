@@ -45,7 +45,7 @@ def _make_client(api_key, api_secret, private_key_location, application_id):
 
 
 @injector.needs("nexmo.client")
-def rent_number(client: nexmo.Client, country_code: str = "US") -> dict:
+def rent_number(sms_callback_url: str, client: nexmo.Client, country_code: str = "US") -> dict:
     """Rents a number for the given country.
 
     NOTE: This immediately charges us for the number (for at least a month).
@@ -62,6 +62,14 @@ def rent_number(client: nexmo.Client, country_code: str = "US") -> dict:
                 {"country": number["country"], "msisdn": number["msisdn"]}
             )
 
+            client.update_number({
+                "msisdn": number["msisdn"],
+                "country": number["country"],
+                "moHttpUrl": sms_callback_url,
+                "voiceCallbackType": "app",
+                "voiceCallbackValue": nexmo.application_id
+            })
+
             # Normalize the number.
             number["msisdn"] = normalize_number(number["msisdn"])
 
@@ -71,6 +79,11 @@ def rent_number(client: nexmo.Client, country_code: str = "US") -> dict:
             continue
 
     raise error
+
+
+@injector.needs("nexmo.client")
+def get_number_info(number: str, client: nexmo.Client) -> dict:
+    return client.get_account_numbers(pattern=number)["numbers"][0]
 
 
 @injector.needs("nexmo.client")

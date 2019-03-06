@@ -19,12 +19,14 @@ import hotline.auth.webhandlers
 import hotline.events.webhandlers
 import hotline.pages.webhandlers
 import hotline.telephony.webhandlers
+import hotline.numberadmin.webhandlers
 
 app = flask.Flask(__name__)
 app.register_blueprint(hotline.telephony.webhandlers.blueprint)
 app.register_blueprint(hotline.auth.webhandlers.blueprint)
 app.register_blueprint(hotline.events.webhandlers.blueprint)
 app.register_blueprint(hotline.pages.webhandlers.blueprint)
+app.register_blueprint(hotline.numberadmin.webhandlers.blueprint)
 
 
 @app.template_filter("phone")

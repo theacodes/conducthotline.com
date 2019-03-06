@@ -1,0 +1,38 @@
+{% extends "admin-layout.html" %}
+
+{% block title %}Numbers{% endblock %}
+
+{% block content %}
+<table class="table is-fullwidth is-striped is-hoverable">
+  <thead>
+    <tr>
+      <th>Number</th>
+      <th>Country</th>
+      <th>Event</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for number in numbers %}
+    <tr>
+      <td>{{number.number}}</td>
+      <td>{{number.country}}</td>
+      <td>
+        {% if number.event %}
+          <a href="{{url_for('events.info', event_slug=number.event.slug)}}">
+            {{number.event.name}}
+          </a>
+        {% endif %}
+      </td>
+      <td class="has-text-right">
+        <a class="button is-primary" href="{{url_for('.details', number=number.number)}}">Details</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="container">
+  <a class="button is-primary" href="{{url_for('.rent')}}">Rent new number</a>
+</div>
+{% endblock %}
