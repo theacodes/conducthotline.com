@@ -46,6 +46,9 @@ class Number(BaseModel):
     country = peewee.CharField(default="US")
 
 
+Number.add_index(Number.number)
+
+
 class Event(BaseModel):
     # Always required stuff.
     name = peewee.TextField()
@@ -63,6 +66,10 @@ class Event(BaseModel):
     location = peewee.TextField(null=True, index=False)
 
 
+Event.add_index(Event.slug)
+Event.add_index(Event.primary_number)
+
+
 class EventMember(BaseModel):
     """Members are part of the hotline, but not necessarily able to edit
     event details."""
@@ -73,6 +80,10 @@ class EventMember(BaseModel):
     verified = peewee.BooleanField()
 
 
+EventMember.add_index(EventMember.event, EventMember.verified)
+EventMember.add_index(EventMember.number, EventMember.verified)
+
+
 class EventOrganizer(BaseModel):
     """Organizers are able to edit event details, but aren't necessarily part
     of the hotline."""
@@ -81,6 +92,9 @@ class EventOrganizer(BaseModel):
     user_id = peewee.CharField(null=True)
     user_name = peewee.TextField(null=True)
     user_email = peewee.TextField()
+
+
+EventOrganizer.add_index(EventOrganizer.user_id)
 
 
 class Chatroom(BaseModel):
@@ -98,6 +112,9 @@ class ChatroomConnection(BaseModel):
         primary_key = peewee.CompositeKey("user_number", "relay_number")
 
 
+ChatroomConnection.add_index(ChatroomConnection.user_number)
+
+
 class AuditLog(BaseModel):
     timestamp = peewee.DateTimeField(default=datetime.datetime.utcnow)
     kind = peewee.IntegerField()
@@ -105,3 +122,6 @@ class AuditLog(BaseModel):
     event = peewee.ForeignKeyField(Event, backref="auditlogs", null=True)
     user = peewee.CharField(null=True)
     metadata = peewee.TextField(null=True)
+
+
+AuditLog.add_index(AuditLog.event, AuditLog.timestamp)
