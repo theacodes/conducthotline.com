@@ -3,7 +3,7 @@
 {% block title %}{{event.name}}{% endblock %}
 
 {% block content %}
-{% include "nav.html" %}
+{% include "events/nav.html" %}
 
 <form method="POST" action="{{url_for(request.endpoint, event_slug=event.slug)}}">
   {% for field in form %}

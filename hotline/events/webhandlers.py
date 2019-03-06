@@ -50,7 +50,7 @@ def info(event_slug):
     if event is None:
         flask.abort(404)
 
-    return flask.render_template("info.html", event=event)
+    return flask.render_template("events/info.html", event=event)
 
 
 @blueprint.route("/events")
@@ -58,7 +58,7 @@ def info(event_slug):
 def list():
     user_id = flask.g.user["user_id"]
     events = db.list_events_for_user(user_id=user_id)
-    return flask.render_template("list.html", events=events)
+    return flask.render_template("events/list.html", events=events)
 
 
 @blueprint.route("/events/add", methods=["GET", "POST"])
@@ -82,7 +82,7 @@ def add():
 
         return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
 
-    return flask.render_template("add.html", form=form)
+    return flask.render_template("events/add.html", form=form)
 
 
 @blueprint.route("/events/<event_slug>/details", methods=["GET", "POST"])
@@ -105,7 +105,7 @@ def details(event, user):
             flask.url_for(flask.request.endpoint, event_slug=event.slug)
         )
 
-    return flask.render_template("edit.html", event=event, form=form)
+    return flask.render_template("events/edit.html", event=event, form=form)
 
 
 @blueprint.route("/events/<event_slug>/numbers", methods=["GET", "POST"])
@@ -134,7 +134,7 @@ def numbers(event, user):
         )
 
     return flask.render_template(
-        "numbers.html", event=event, members=members, form=form
+        "events/numbers.html", event=event, members=members, form=form
     )
 
 
@@ -177,7 +177,7 @@ def organizers(event, user):
         )
 
     return flask.render_template(
-        "organizers.html", event=event, organizers=organizers, form=form
+        "events/organizers.html", event=event, organizers=organizers, form=form
     )
 
 
@@ -248,5 +248,5 @@ def logs(event, user):
     logs = db.get_logs_for_event(event)
 
     return flask.render_template(
-        "logs.html", event=event, logs=logs, Kind=audit_log.Kind
+        "events/logs.html", event=event, logs=logs, Kind=audit_log.Kind
     )
