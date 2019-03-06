@@ -53,7 +53,7 @@ def info(event_slug):
     return flask.render_template("events/info.html", event=event)
 
 
-@blueprint.route("/events")
+@blueprint.route("/manage/events")
 @auth_required
 def list():
     user_id = flask.g.user["user_id"]
@@ -61,7 +61,7 @@ def list():
     return flask.render_template("events/list.html", events=events)
 
 
-@blueprint.route("/events/add", methods=["GET", "POST"])
+@blueprint.route("/manage/events/add", methods=["GET", "POST"])
 @super_admin_required
 def add():
     user = flask.g.user
@@ -85,7 +85,7 @@ def add():
     return flask.render_template("events/add.html", form=form)
 
 
-@blueprint.route("/events/<event_slug>/details", methods=["GET", "POST"])
+@blueprint.route("/manage/events/<event_slug>/details", methods=["GET", "POST"])
 @event_access_required
 def details(event, user):
     form = forms.EventEditForm(flask.request.form, event)
@@ -108,7 +108,7 @@ def details(event, user):
     return flask.render_template("events/edit.html", event=event, form=form)
 
 
-@blueprint.route("/events/<event_slug>/numbers", methods=["GET", "POST"])
+@blueprint.route("/manage/events/<event_slug>/numbers", methods=["GET", "POST"])
 @event_access_required
 def numbers(event, user):
     members = db.get_event_members(event)
@@ -138,7 +138,7 @@ def numbers(event, user):
     )
 
 
-@blueprint.route("/events/<event_slug>/members/remove/<member_id>")
+@blueprint.route("/manage/events/<event_slug>/members/remove/<member_id>")
 @event_access_required
 def remove_member(member_id, event, user):
     member = db.get_member(member_id)
@@ -155,7 +155,7 @@ def remove_member(member_id, event, user):
     return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
 
 
-@blueprint.route("/events/<event_slug>/organizers", methods=["GET", "POST"])
+@blueprint.route("/manage/events/<event_slug>/organizers", methods=["GET", "POST"])
 @event_access_required
 def organizers(event, user):
     organizers = db.get_event_organizers(event)
@@ -181,7 +181,7 @@ def organizers(event, user):
     )
 
 
-@blueprint.route("/events/<event_slug>/organizers/remove/<organizer_id>")
+@blueprint.route("/manage/events/<event_slug>/organizers/remove/<organizer_id>")
 @event_access_required
 def remove_organizer(organizer_id, event, user):
     organizer = db.get_event_organizer(organizer_id)
@@ -198,7 +198,7 @@ def remove_organizer(organizer_id, event, user):
     return flask.redirect(flask.url_for(".organizers", event_slug=event.slug))
 
 
-@blueprint.route("/events/organizers/invitations/<invitation_id>")
+@blueprint.route("/manage/events/organizers/invitations/<invitation_id>")
 @auth_required
 def accept_organizer_invitation(invitation_id):
     event = db.accept_organizer_invitation(invitation_id, flask.g.user)
@@ -209,7 +209,7 @@ def accept_organizer_invitation(invitation_id):
     return flask.redirect(flask.url_for(".details", event_slug=event.slug))
 
 
-@blueprint.route("/events/<event_slug>/release")
+@blueprint.route("/manage/events/<event_slug>/release")
 @event_access_required
 def release(event, user):
     previous_number = event.primary_number
@@ -227,7 +227,7 @@ def release(event, user):
     return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
 
 
-@blueprint.route("/events/<event_slug>/acquire")
+@blueprint.route("/manage/events/<event_slug>/acquire")
 @event_access_required
 def acquire(event, user):
     new_number = db.acquire_number(event)
@@ -242,7 +242,7 @@ def acquire(event, user):
     return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
 
 
-@blueprint.route("/events/<event_slug>/logs")
+@blueprint.route("/manage/events/<event_slug>/logs")
 @event_access_required
 def logs(event, user):
     logs = db.get_logs_for_event(event)
