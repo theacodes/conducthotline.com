@@ -26,13 +26,17 @@ class EventEditForm(wtforms.Form):
         validators=[wtforms.validators.InputRequired()],
     )
     coc_link = wtforms.StringField(
-        description="Displayed on the public view for your event. Should be a full URL, including https://.")
+        description="Displayed on the public view for your event. Should be a full URL, including https://."
+    )
     website = wtforms.StringField(
-        description="Displayed on the public view for your event. Should be a full URL, including https://.")
+        description="Displayed on the public view for your event. Should be a full URL, including https://."
+    )
     contact_email = wtforms.StringField(
-        description="Displayed on the public view for your event.")
+        description="Displayed on the public view for your event."
+    )
     location = wtforms.StringField(
-        description="Displayed on the public view for your event.")
+        description="Displayed on the public view for your event."
+    )
 
 
 def validate_phone_number(form, field):

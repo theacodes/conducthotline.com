@@ -47,6 +47,18 @@ def test(session):
 
 
 @nox.session(python="3.7")
+def cli(session):
+    session.install("-r", "requirements.txt")
+    env = {
+        # Workaround for https://github.com/pallets/werkzeug/issues/461
+        "PYTHONPATH": os.getcwd(),
+        "FLASK_ENV": "development",
+        "FLASK_APP": "hotline.__main__",
+    }
+    session.run("python", "-m", "flask", *session.posargs, env=env)
+
+
+@nox.session(python="3.7")
 def serve(session):
     session.install("-r", "requirements.txt")
     env = {

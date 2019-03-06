@@ -45,7 +45,24 @@ def _make_client(api_key, api_secret, private_key_location, application_id):
 
 
 @injector.needs("nexmo.client")
-def rent_number(sms_callback_url: str, client: nexmo.Client, country_code: str = "US") -> dict:
+def setup_number(
+    number: str, country: str, sms_callback_url: str, client: nexmo.Client
+):
+    client.update_number(
+        {
+            "msisdn": number,
+            "country": country,
+            "moHttpUrl": sms_callback_url,
+            "voiceCallbackType": "app",
+            "voiceCallbackValue": client.application_id,
+        }
+    )
+
+
+@injector.needs("nexmo.client")
+def rent_number(
+    sms_callback_url: str, client: nexmo.Client, country_code: str = "US"
+) -> dict:
     """Rents a number for the given country.
 
     NOTE: This immediately charges us for the number (for at least a month).
@@ -62,13 +79,12 @@ def rent_number(sms_callback_url: str, client: nexmo.Client, country_code: str =
                 {"country": number["country"], "msisdn": number["msisdn"]}
             )
 
-            client.update_number({
-                "msisdn": number["msisdn"],
-                "country": number["country"],
-                "moHttpUrl": sms_callback_url,
-                "voiceCallbackType": "app",
-                "voiceCallbackValue": nexmo.application_id
-            })
+            setup_number(
+                number=number["msisdn"],
+                country=number["country"],
+                sms_callback_url=sms_callback_url,
+                client=client,
+            )
 
             # Normalize the number.
             number["msisdn"] = normalize_number(number["msisdn"])
@@ -92,6 +108,9 @@ def send_sms(sender: str, to: str, message: str, client: nexmo.Client) -> dict:
 
     ``sender`` and ``to`` must be in proper long form.
     """
+    # Nexmo is apparently picky about + being in the sender.
+    sender = sender.strip("+")
+
     resp = client.send_message({"from": sender, "to": to, "text": message})
 
     # Nexmo client incorrectly treats failed messages as successful

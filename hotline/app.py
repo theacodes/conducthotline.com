@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import click
 import flask
 import phonenumbers
 
 import hotline.auth.webhandlers
 import hotline.events.webhandlers
+import hotline.numberadmin.webhandlers
 import hotline.pages.webhandlers
 import hotline.telephony.webhandlers
-import hotline.numberadmin.webhandlers
 
 app = flask.Flask(__name__)
 app.register_blueprint(hotline.telephony.webhandlers.blueprint)
@@ -70,3 +71,26 @@ def server_error(e):
         )
 
     return flask.render_template("500.html")
+
+
+@app.cli.command()
+def reset_database():
+    from hotline.database.create_tables import create_tables
+
+    create_tables()
+
+
+@app.cli.command()
+@click.argument("number")
+@click.argument("sms_callback_url")
+def manual_add_number(number, sms_callback_url):
+    import hotline.telephony.lowlevel
+    from hotline.database import models
+
+    hotline.telephony.lowlevel.setup_number(number, "US", sms_callback_url)
+
+    with models.db:
+        number_entry = models.Number()
+        number_entry.number = hotline.telephony.lowlevel.normalize_number(number)
+        number_entry.country = "US"
+        number_entry.save()

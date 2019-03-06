@@ -22,6 +22,7 @@ from hotline.telephony import lowlevel
 
 def test_rent_number():
     client = mock.create_autospec(nexmo.Client)
+    client.application_id = "appid"
 
     client.get_available_numbers.return_value = {
         "numbers": [
@@ -30,30 +31,32 @@ def test_rent_number():
         ]
     }
 
-    result = lowlevel.rent_number(client=client)
+    result = lowlevel.rent_number(sms_callback_url="example.com/sms", client=client)
 
-    assert result == {"country": "US", "msisdn": "123456789"}
+    assert result == {"country": "US", "msisdn": "+1123456789"}
 
     client.get_available_numbers.assert_called_once()
-    client.buy_number.assert_called_once_with(result)
+    client.buy_number.assert_called_once_with({"country": "US", "msisdn": "123456789"})
 
 
 def test_rent_number_none_available():
     client = mock.create_autospec(nexmo.Client)
+    client.application_id = "appid"
 
     client.get_available_numbers.return_value = {"numbers": []}
 
     with pytest.raises(RuntimeError, match="No numbers available"):
-        lowlevel.rent_number(client=client)
+        lowlevel.rent_number(sms_callback_url="example.com/sms", client=client)
 
 
 def test_rent_number_buy_error_is_okay():
     client = mock.create_autospec(nexmo.Client)
+    client.application_id = "appid"
 
     client.get_available_numbers.return_value = {
         "numbers": [
-            {"country": "US", "msisdn": "123456789"},
-            {"country": "US", "msisdn": "987654321"},
+            {"country": "US", "msisdn": "+1123456789"},
+            {"country": "US", "msisdn": "+1987654321"},
         ]
     }
 
@@ -61,15 +64,16 @@ def test_rent_number_buy_error_is_okay():
     # ends up buying the second number.
     client.buy_number.side_effect = [nexmo.Error(), None]
 
-    result = lowlevel.rent_number(client=client)
+    result = lowlevel.rent_number(sms_callback_url="example.com/sms", client=client)
 
-    assert result == {"country": "US", "msisdn": "987654321"}
+    assert result == {"country": "US", "msisdn": "+1987654321"}
     assert client.buy_number.call_count == 2
 
 
 @mock.patch("time.sleep", autospec=True)
 def test_send_sms(sleep):
     client = mock.create_autospec(nexmo.Client)
+    client.application_id = "appid"
 
     client.send_message.return_value = {"messages": [{}]}
 
