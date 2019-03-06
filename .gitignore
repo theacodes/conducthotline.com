@@ -77,6 +77,7 @@ target/
 # secrets
 secrets.json
 secrets.prod.json
+secrets.prod-from-local.json
 secrets.local.json
 secrets.test.json
 *service-account.json
