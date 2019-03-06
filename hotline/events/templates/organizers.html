@@ -1,0 +1,82 @@
+{% extends "admin-layout.html" %}
+
+{% block title %}{{event.name}}{% endblock %}
+
+{% block content %}
+{% include "nav.html" %}
+{% endblock %}
+
+{% block extra_sections %}
+
+<section class="section">
+<div class="container">
+  <h2 class="title">Organizers</h2>
+  <h3 class="subtitle">These people can edit event details, manage hotline members, and add and remove other organizers. These folks are not necessarily part of the hotline.</h3>
+  <table class="table is-fullwidth is-striped is-hoverable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Inivitation link</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for organizer in organizers %}
+      <tr>
+        <td>{{organizer.user_name|e}}</td>
+        <td>{{organizer.user_email|e}}</td>
+        <th>
+          {% if not organizer.user_id %}
+            {{url_for('.accept_organizer_invitation', invitation_id=organizer.id, _external=True)}}
+          {% endif %}
+        </th>
+        <th class="has-text-right">
+          {% if organizer.user_id != g.user["user_id"] %}
+            <a class="button is-danger" href="{{url_for('.remove_organizer', event_slug=event.slug, organizer_id=organizer.id)}}">Remove</a>
+          {% endif %}
+        </th>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+</section>
+
+<section class="section">
+<div class="container">
+  <h2 class="title">Add organizer</h2>
+  <h3 class="subtitle">You'll be given an invitation URL to send the organizer. Once they log in, they'll have access to the event. They must log in with an account that matches the email, otherwise they won't be given access.</h3>
+
+  <form method="POST" action="{{url_for(request.endpoint, event_slug=event.slug)}}">
+    {% for field in form %}
+      <div class="field">
+        <label class="label">{{ field.label() }}</label>
+        <div class="control">
+          {{ field(class="input") }}
+        </div>
+        {% if field.description %}
+          <p class="help">
+              {{field.description}}
+          </p>
+        {% endif %}
+        {% if field.errors %}
+          <p class="help is-danger">
+            {% for error in field.errors %}
+              {{ error|e }}<br/>
+            {% endfor %}
+          </p>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+
+    <div class="field is-grouped">
+      <div class="control">
+        <button class="button is-primary" type="submit">Save</button>
+      </div>
+    </div>
+  </form>
+</div>
+</section>
+{% endblock %}

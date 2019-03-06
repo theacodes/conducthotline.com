@@ -21,6 +21,7 @@ models = [
     db.Number,
     db.Event,
     db.EventMember,
+    db.EventOrganizer,
     db.Chatroom,
     db.ChatroomConnection,
     db.AuditLog,

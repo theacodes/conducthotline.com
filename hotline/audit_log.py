@@ -28,6 +28,8 @@ class Kind(enum.IntEnum):
     VOICE_CONVERSATION_STARTED = 6
     NUMBER_ACQUIRED = 7
     NUMBER_RELEASED = 8
+    ORGANIZER_ADDED = 9
+    ORGANIZER_REMOVED = 10
 
 
 def log(

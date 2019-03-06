@@ -18,6 +18,10 @@ import hotline.config
 from hotline.app import app
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("peewee")
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.DEBUG)
+
 hotline.config.load()
 
 # This is only used when running locally. When running live, gunicorn runs

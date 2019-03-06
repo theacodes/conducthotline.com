@@ -31,13 +31,10 @@ def event_access_required(view):
     @functools.wraps(view)
     @auth_required
     def check_access_decorator(event_slug, *args, **kwargs):
-        event = db.get_event_by_slug(event_slug)
+        event = db.check_if_user_is_organizer(event_slug, flask.g.user["user_id"])
 
         if event is None:
             flask.abort(404)
-
-        if event.owner_user_id != flask.g.user["user_id"]:
-            flask.abort(403)
 
         kwargs["event"] = event
         kwargs["user"] = flask.g.user
@@ -60,26 +57,27 @@ def info(event_slug):
 @auth_required
 def list():
     user_id = flask.g.user["user_id"]
-    events = db.list_events(user_id=user_id)
+    events = db.list_events_for_user(user_id=user_id)
     return flask.render_template("list.html", events=events)
 
 
 @blueprint.route("/events/add", methods=["GET", "POST"])
 @auth_required
 def add():
-    user_id = flask.g.user["user_id"]
+    user = flask.g.user
     form = forms.EventEditForm(flask.request.form)
 
     if flask.request.method == "POST" and form.validate():
-        event = db.new_event(user_id=user_id)
+        event = db.new_event()
         form.populate_obj(event)
         event.save()
+        db.add_event_organizer(event, user)
 
         audit_log.log(
             audit_log.Kind.EVENT_MODIFIED,
             description=f"{flask.g.user['name']} created the event.",
             event=event,
-            user=user_id,
+            user=user["user_id"],
         )
 
         return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
@@ -101,6 +99,10 @@ def details(event, user):
             description=f"{flask.g.user['name']} updated the event details.",
             event=event,
             user=user["user_id"],
+        )
+
+        return flask.redirect(
+            flask.url_for(flask.request.endpoint, event_slug=event.slug)
         )
 
     return flask.render_template("edit.html", event=event, form=form)
@@ -151,6 +153,60 @@ def remove_member(member_id, event, user):
     )
 
     return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
+
+
+@blueprint.route("/events/<event_slug>/organizers", methods=["GET", "POST"])
+@event_access_required
+def organizers(event, user):
+    organizers = db.get_event_organizers(event)
+
+    form = forms.AddOrganizerForm(flask.request.form)
+
+    if flask.request.method == "POST" and form.validate():
+        db.add_pending_event_organizer(event, form.email.data)
+
+        audit_log.log(
+            audit_log.Kind.ORGANIZER_ADDED,
+            description=f"{flask.g.user['name']} invited {form.email.data}.",
+            event=event,
+            user=user["user_id"],
+        )
+
+        return flask.redirect(
+            flask.url_for(flask.request.endpoint, event_slug=event.slug)
+        )
+
+    return flask.render_template(
+        "organizers.html", event=event, organizers=organizers, form=form
+    )
+
+
+@blueprint.route("/events/<event_slug>/organizers/remove/<organizer_id>")
+@event_access_required
+def remove_organizer(organizer_id, event, user):
+    organizer = db.get_event_organizer(organizer_id)
+
+    db.remove_event_organizer(organizer_id)
+
+    audit_log.log(
+        audit_log.Kind.ORGANIZER_REMOVED,
+        description=f"{flask.g.user['name']} removed {organizer.user_email}.",
+        event=event,
+        user=user["user_id"],
+    )
+
+    return flask.redirect(flask.url_for(".organizers", event_slug=event.slug))
+
+
+@blueprint.route("/events/organizers/invitations/<invitation_id>")
+@auth_required
+def accept_organizer_invitation(invitation_id):
+    event = db.accept_organizer_invitation(invitation_id, flask.g.user)
+
+    if event is None:
+        flask.abort(403)
+
+    return flask.redirect(flask.url_for(".details", event_slug=event.slug))
 
 
 @blueprint.route("/events/<event_slug>/release")

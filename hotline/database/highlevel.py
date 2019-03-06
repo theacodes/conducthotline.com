@@ -29,18 +29,33 @@ def initialize_db(database):
     models.db.initialize(playhouse.db_url.connect(database))
 
 
-def list_events(user_id: str) -> Iterable[models.Event]:
+def list_events_for_user(user_id: str) -> Iterable[models.Event]:
     query = (
-        models.Event.select()
-        .where(models.Event.owner_user_id == user_id)
+        models.Event.select(models.Event.name, models.Event.slug)
+        .join(models.EventOrganizer)
+        .where(models.EventOrganizer.user_id == user_id)
         .order_by(models.Event.name)
     )
+
     yield from query
 
 
-def new_event(user_id: str) -> models.Event:
+def check_if_user_is_organizer(event_slug, user_id) -> Optional[models.Event]:
+    query = (
+        models.Event.select()
+        .join(models.EventOrganizer)
+        .where(models.Event.slug == event_slug)
+        .where(models.EventOrganizer.user_id == user_id)
+        .order_by(models.Event.name)
+    )
+    try:
+        return query.get()
+    except peewee.DoesNotExist:
+        return None
+
+
+def new_event() -> models.Event:
     event = models.Event()
-    event.owner_user_id = user_id
     return event
 
 
@@ -56,6 +71,55 @@ def get_event_by_number(number: str) -> Optional[models.Event]:
         return models.Event.get(models.Event.primary_number == number)
     except peewee.DoesNotExist:
         return None
+
+
+def get_event_organizers(event: models.Event):
+    query = event.organizers
+    yield from query
+
+
+def add_event_organizer(event: models.Event, user: dict) -> None:
+    organizer_entry = models.EventOrganizer()
+    organizer_entry.event = event
+    organizer_entry.user_id = user["user_id"]
+    organizer_entry.user_name = user["name"]
+    organizer_entry.user_email = user["email"]
+    organizer_entry.save()
+
+
+def add_pending_event_organizer(event: models.Event, user_email: str) -> None:
+    organizer_entry = models.EventOrganizer()
+    organizer_entry.event = event
+    organizer_entry.user_email = user_email
+    organizer_entry.save()
+
+
+def accept_organizer_invitation(
+    invitation_id: str, user: dict
+) -> Optional[models.Event]:
+    try:
+        organizer_entry = get_event_organizer(invitation_id)
+    except peewee.DoesNotExist:
+        return None
+
+    if organizer_entry.user_email != user["email"]:
+        return None
+
+    organizer_entry.user_id = user["user_id"]
+    organizer_entry.user_name = user["name"]
+    organizer_entry.save()
+
+    return organizer_entry.event
+
+
+def remove_event_organizer(organizer_id: str) -> None:
+    models.EventOrganizer.get(
+        models.EventOrganizer.id == int(organizer_id)
+    ).delete_instance()
+
+
+def get_event_organizer(organizer_id: str) -> models.EventOrganizer:
+    return models.EventOrganizer.get_by_id(organizer_id)
 
 
 def get_event_members(event) -> Iterable[models.EventMember]:

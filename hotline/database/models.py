@@ -43,13 +43,13 @@ class SerializableField(peewee.TextField):
 
 class Number(BaseModel):
     number = peewee.TextField()
+    country = peewee.CharField(default="US")
 
 
 class Event(BaseModel):
     # Always required stuff.
     name = peewee.TextField()
     slug = peewee.CharField(unique=True)
-    owner_user_id = peewee.CharField()
 
     # Number assignement.
     # Stored as destructured as well to speed things up a little.
@@ -64,10 +64,23 @@ class Event(BaseModel):
 
 
 class EventMember(BaseModel):
+    """Members are part of the hotline, but not necessarily able to edit
+    event details."""
+
     event = peewee.ForeignKeyField(Event, backref="members")
     name = peewee.TextField()
     number = peewee.TextField()
     verified = peewee.BooleanField()
+
+
+class EventOrganizer(BaseModel):
+    """Organizers are able to edit event details, but aren't necessarily part
+    of the hotline."""
+
+    event = peewee.ForeignKeyField(Event, backref="organizers")
+    user_id = peewee.CharField(null=True)
+    user_name = peewee.TextField(null=True)
+    user_email = peewee.TextField()
 
 
 class Chatroom(BaseModel):

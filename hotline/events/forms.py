@@ -53,3 +53,9 @@ class AddMemberForm(wtforms.Form):
     number = wtforms.StringField(
         "Number", validators=[wtforms.validators.InputRequired(), validate_phone_number]
     )
+
+
+class AddOrganizerForm(wtforms.Form):
+    email = wtforms.StringField(
+        "Email", validators=[wtforms.validators.InputRequired()]
+    )
