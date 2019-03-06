@@ -22,6 +22,8 @@ It's invitation-only right now. Please email me, Thea Flowers, at me@thea.codes.
 
 [Thea Flowers](https://thea.codes) (me). I offer this as a free service to any events that want to use it. It's not expensive, but it's also not free, either. If you want you can [donate](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=E9R6P8RVSRHSS&currency_code=USD&source=url).
 
+We also receive some credits courtesy of the Nexmo Developer Relations team (thanks, Nexmo!)
+
 
 ## Privacy? Legal?
 
