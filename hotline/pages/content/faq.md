@@ -29,7 +29,7 @@ See our [privacy policy](/pages/privacy) for more details.
 
 ## Who built this?
 
-[Thea Flowers](https://thea.codes) built this with lots of inspiration from [Maritta's](https://mariatta.ca) [enhanced CoC hotline](https://www.nexmo.com/blog/2018/11/15/pycascades-code-of-conduct-hotline-nexmo-voice-api-dr/).
+[Thea Flowers](https://thea.codes) built this with lots of inspiration from [Mariatta's](https://mariatta.ca) [enhanced CoC hotline](https://www.nexmo.com/blog/2018/11/15/pycascades-code-of-conduct-hotline-nexmo-voice-api-dr/).
 
 
 ## What's it built with?
