@@ -19,7 +19,7 @@ import flask
 import hotline.database.ext
 import hotline.telephony.verification
 from hotline import audit_log
-from hotline.auth import auth_required
+from hotline.auth import auth_required, super_admin_required
 from hotline.database import highlevel as db
 from hotline.events import forms
 
@@ -62,7 +62,7 @@ def list():
 
 
 @blueprint.route("/events/add", methods=["GET", "POST"])
-@auth_required
+@super_admin_required
 def add():
     user = flask.g.user
     form = forms.EventEditForm(flask.request.form)

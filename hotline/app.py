@@ -41,7 +41,7 @@ def phone_format_filter(s):
 # Add a default root route.
 @app.route("/")
 def index():
-    return "Hello"
+    return flask.redirect(flask.url_for("pages.view_page", name="about"))
 
 
 @app.errorhandler(404)
@@ -49,17 +49,22 @@ def not_found(e):
     return flask.render_template("404.html")
 
 
+@app.errorhandler(403)
+def unauthorized(e):
+    return flask.render_template("403.html")
+
+
 @app.errorhandler(500)
 def server_error(e):
-    """TODO: Disable in production."""
-    return (
-        """
-    An internal error occurred: <pre>{}</pre>
-    See logs for full stacktrace.
-    """.format(
-            e
-        ),
-        500,
-    )
+    if app.debug:
+        return (
+            """
+        An internal error occurred: <pre>{}</pre>
+        See logs for full stacktrace.
+        """.format(
+                e
+            ),
+            500,
+        )
 
-    return app
+    return flask.render_template("500.html")

@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from hotline.auth.webhandlers import auth_required
+from hotline.auth.webhandlers import auth_required, super_admin_required
 
-__all__ = ["auth_required"]
+__all__ = ["auth_required", "super_admin_required"]

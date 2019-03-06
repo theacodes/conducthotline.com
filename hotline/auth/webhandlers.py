@@ -59,6 +59,19 @@ def auth_required(f):
     return auth_required_view
 
 
+def super_admin_required(f):
+    @functools.wraps(f)
+    @auth_required
+    def super_admin_required_view(*args, **kwargs):
+        super_admins = injector.get("secrets.super_admins")
+        if flask.g.user["user_id"] not in super_admins:
+            flask.abort(403)
+
+        return f(*args, **kwargs)
+
+    return super_admin_required_view
+
+
 @blueprint.route("/auth/login")
 @injector.needs("secrets.firebase.config")
 def login(config):
