@@ -15,6 +15,7 @@
 """Handles low-level telephony-related actions, such as renting numbers and
 sending messages."""
 
+from google.api_core import retry
 import nexmo
 import phonenumbers
 
@@ -102,6 +103,13 @@ def get_number_info(number: str, client: nexmo.Client) -> dict:
     return client.get_account_numbers(pattern=number)["numbers"][0]
 
 
+def _send_sms_retry_predicate(error):
+    if isinstance(error, nexmo.ClientError) and "Throughput Rate Exceeded" in str(error):
+        return True
+    return False
+
+
+@retry.Retry(predicate=_send_sms_retry_predicate, initial=1.0, deadline=30.0)
 @injector.needs("nexmo.client")
 def send_sms(sender: str, to: str, message: str, client: nexmo.Client) -> dict:
     """Sends an SMS.
@@ -118,10 +126,5 @@ def send_sms(sender: str, to: str, message: str, client: nexmo.Client) -> dict:
 
     if error_text:
         raise nexmo.ClientError(error_text)
-
-    import time
-
-    # TODO: Something... better.
-    time.sleep(2)
 
     return resp
