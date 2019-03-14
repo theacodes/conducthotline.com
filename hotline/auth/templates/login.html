@@ -11,57 +11,11 @@
     <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
 
     <!-- Firebase Auth script -->
-    <script type="text/javascript">
-      // Firebase App config, needed before FirebaseUI.
-      var config = {{firebase_config|tojson}};
-      firebase.initializeApp(config);
-
-      // We're using session cookies to persist auth state. See
-      // https://firebase.google.com/docs/auth/admin/manage-cookies
-
-      // As httpOnly cookies are to be used, do not persist any state client side.
-      firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
-
-      // FirebaseUI config.
-
-      var uiConfig = {
-        callbacks: {
-          signInSuccessWithAuthResult: function(authResult, redirectUrl) {
-            authResult.user.getIdToken().then(function(idToken) {
-              // Session login endpoint is queried and the session cookie is set.
-              // TODO: CSRF protection should be taken into account.
-              // const csrfToken = getCookie('csrfToken')
-              return fetch('/auth/token-login', {method: 'POST', headers: {
-                'Authentication': 'Bearer ' + idToken
-              }}).then(function(response) {
-                document.getElementById("logged-in").setAttribute("style", "");
-                window.location.href = {{next|tojson}} || "/";
-              })
-            });
-          }
-        },
-        signInOptions: [
-          // Leave the lines as is for the providers you want to offer your users.
-          firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-          firebase.auth.GithubAuthProvider.PROVIDER_ID,
-          //firebase.auth.EmailAuthProvider.PROVIDER_ID,
-          //firebase.auth.PhoneAuthProvider.PROVIDER_ID
-        ],
-        // TODO: Wire these up.
-        // Terms of service url/callback.
-        tosUrl: '/tos',
-        // Privacy policy url/callback.
-        privacyPolicyUrl: '/privacy'
-      };
-
-      // Initialize the FirebaseUI Widget using Firebase.
-      var ui = new firebaseui.auth.AuthUI(firebase.auth());
-      // The start method will wait until the DOM is loaded.
-      ui.start('#firebaseui-auth-container', uiConfig);
-    </script>
+    <script src="{{ url_for('static', filename='auth.js') }}" type="text/javascript"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
   </head>
   <body>
       <div id="firebaseui-auth-container"></div>
-      <div id="logged-in" style="display: none">You have been logged in and will get redirectly shortly.</div>
+      <div id="logged-in" next-url="{{next}}">You have been logged in and will get redirectly shortly.</div>
   </body>
 </html>

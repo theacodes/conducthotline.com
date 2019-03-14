@@ -8,3 +8,4 @@ gunicorn
 typing-extensions
 phonenumbers
 cmarkgfm
+flask-talisman

@@ -5,3 +5,17 @@
 .event-info .info-section {
     margin-top: 1rem;
 }
+
+
+#logged-in {
+    display: none;
+}
+
+
+#logged-in.success {
+    display: block;
+}
+
+.navbar-end .is-rounded {
+    max-height: none;
+}

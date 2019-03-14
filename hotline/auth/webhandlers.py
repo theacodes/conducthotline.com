@@ -73,11 +73,16 @@ def super_admin_required(f):
 
 
 @blueprint.route("/auth/login")
-@injector.needs("secrets.firebase.config")
-def login(config):
+def login():
     return flask.render_template(
-        "login.html", firebase_config=config, next=flask.request.args.get("next")
+        "login.html", next=flask.request.args.get("next")
     )
+
+
+@blueprint.route("/auth/config.json")
+@injector.needs("secrets.firebase.config")
+def config(config):
+    return flask.jsonify(config)
 
 
 @blueprint.route("/auth/token-login", methods=["POST"])

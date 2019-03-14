@@ -14,6 +14,7 @@
 
 import click
 import flask
+import flask_talisman
 import phonenumbers
 
 import hotline.auth.webhandlers
@@ -23,6 +24,43 @@ import hotline.pages.webhandlers
 import hotline.telephony.webhandlers
 
 app = flask.Flask(__name__)
+flask_talisman.Talisman(app, content_security_policy={
+    "default-src": [
+        "'self'",
+    ],
+    "script-src": [
+        "'self'",
+        "www.gstatic.com",
+        "cdn.firebase.com",
+        "apis.google.com",
+        "use.fontawesome.com",
+    ],
+    "style-src": [
+        "'self'",
+        "fonts.googleapis.com",
+        "cdn.firebase.com",
+        "cdnjs.cloudflare.com",
+        "use.fontawesome.com",
+    ],
+    "font-src": [
+        "fonts.gstatic.com",
+    ],
+    "img-src": [
+        "'self'",
+        "www.gstatic.com",
+        # Required for user avatars from GitHub, Google.
+        "*.githubusercontent.com",
+        "*.googleusercontent.com",
+    ],
+    "connect-src": [
+        "'self'",
+        "www.googleapis.com",
+    ],
+    "frame-src": [
+        "https://conducthotline-fb.firebaseapp.com/",
+    ],
+})
+
 app.register_blueprint(hotline.telephony.webhandlers.blueprint)
 app.register_blueprint(hotline.auth.webhandlers.blueprint)
 app.register_blueprint(hotline.events.webhandlers.blueprint)
