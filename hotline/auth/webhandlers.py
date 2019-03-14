@@ -74,9 +74,7 @@ def super_admin_required(f):
 
 @blueprint.route("/auth/login")
 def login():
-    return flask.render_template(
-        "login.html", next=flask.request.args.get("next")
-    )
+    return flask.render_template("login.html", next=flask.request.args.get("next"))
 
 
 @blueprint.route("/auth/config.json")

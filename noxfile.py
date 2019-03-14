@@ -18,6 +18,18 @@ import nox
 
 
 @nox.session(python="3.7")
+def freeze(session):
+    session.install("pip-tools")
+    session.run(
+        "pip-compile",
+        "--generate-hashes",
+        "--output-file",
+        "requirements.txt",
+        "requirements.in",
+    )
+
+
+@nox.session(python="3.7")
 def format(session):
     session.install("black", "isort")
     session.run("black", "hotline", "tests", "noxfile.py")

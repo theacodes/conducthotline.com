@@ -17,8 +17,8 @@ sending messages."""
 
 import nexmo
 import phonenumbers
-from google.api_core import retry
 
+from google.api_core import retry
 from hotline import injector
 
 

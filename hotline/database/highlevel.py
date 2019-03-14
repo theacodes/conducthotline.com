@@ -17,9 +17,9 @@
 from typing import Iterable, List, Optional
 
 import peewee
-import playhouse.db_url
 
 import hotline.chatroom
+import playhouse.db_url
 from hotline import injector
 from hotline.database import models
 

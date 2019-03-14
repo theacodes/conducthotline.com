@@ -1,0 +1,12 @@
+flask
+nexmo
+peewee
+firebase-admin
+wtforms
+psycopg2-binary
+gunicorn
+typing-extensions
+phonenumbers
+cmarkgfm
+flask-talisman
+flask-seasurf

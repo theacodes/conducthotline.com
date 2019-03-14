@@ -18,8 +18,8 @@ import flask_talisman
 import jinja2
 import phonenumbers
 
-import hotline.csrf
 import hotline.auth.webhandlers
+import hotline.csrf
 import hotline.events.webhandlers
 import hotline.numberadmin.webhandlers
 import hotline.pages.webhandlers
@@ -28,42 +28,36 @@ import hotline.telephony.webhandlers
 app = flask.Flask(__name__)
 hotline.csrf.init_app(app)
 
-flask_talisman.Talisman(app, content_security_policy={
-    "default-src": [
-        "'self'",
-    ],
-    "script-src": [
-        "'self'",
-        "www.gstatic.com",
-        "cdn.firebase.com",
-        "apis.google.com",
-        "use.fontawesome.com",
-    ],
-    "style-src": [
-        "'self'",
-        "fonts.googleapis.com",
-        "cdn.firebase.com",
-        "cdnjs.cloudflare.com",
-        "use.fontawesome.com",
-    ],
-    "font-src": [
-        "fonts.gstatic.com",
-    ],
-    "img-src": [
-        "'self'",
-        "www.gstatic.com",
-        # Required for user avatars from GitHub, Google.
-        "*.githubusercontent.com",
-        "*.googleusercontent.com",
-    ],
-    "connect-src": [
-        "'self'",
-        "www.googleapis.com",
-    ],
-    "frame-src": [
-        "https://conducthotline-fb.firebaseapp.com/",
-    ],
-})
+flask_talisman.Talisman(
+    app,
+    content_security_policy={
+        "default-src": ["'self'"],
+        "script-src": [
+            "'self'",
+            "www.gstatic.com",
+            "cdn.firebase.com",
+            "apis.google.com",
+            "use.fontawesome.com",
+        ],
+        "style-src": [
+            "'self'",
+            "fonts.googleapis.com",
+            "cdn.firebase.com",
+            "cdnjs.cloudflare.com",
+            "use.fontawesome.com",
+        ],
+        "font-src": ["fonts.gstatic.com"],
+        "img-src": [
+            "'self'",
+            "www.gstatic.com",
+            # Required for user avatars from GitHub, Google.
+            "*.githubusercontent.com",
+            "*.googleusercontent.com",
+        ],
+        "connect-src": ["'self'", "www.googleapis.com"],
+        "frame-src": ["https://conducthotline-fb.firebaseapp.com/"],
+    },
+)
 
 app.register_blueprint(hotline.telephony.webhandlers.blueprint)
 app.register_blueprint(hotline.auth.webhandlers.blueprint)
@@ -87,7 +81,10 @@ def phone_format_filter(s):
 def add_csrf_field_processor():
     def csrf_field():
         csrf_token = app.jinja_env.globals["csrf_token"]()
-        return jinja2.Markup(f"<input type=\"hidden\" name=\"_csrf_token\" value=\"{csrf_token}\">")
+        return jinja2.Markup(
+            f'<input type="hidden" name="_csrf_token" value="{csrf_token}">'
+        )
+
     return dict(csrf_field=csrf_field)
 
 
