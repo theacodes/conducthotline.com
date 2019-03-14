@@ -49,6 +49,8 @@
   <h3 class="subtitle">You'll be given an invitation URL to send the organizer. Once they log in, they'll have access to the event. They must log in with an account that matches the email, otherwise they won't be given access.</h3>
 
   <form method="POST" action="{{url_for(request.endpoint, event_slug=event.slug)}}">
+    {{csrf_field()}}
+
     {% for field in form %}
       <div class="field">
         <label class="label">{{ field.label() }}</label>

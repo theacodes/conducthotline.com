@@ -23,11 +23,10 @@
         callbacks: {
           signInSuccessWithAuthResult: function(authResult, redirectUrl) {
             authResult.user.getIdToken().then(function(idToken) {
-              // Session login endpoint is queried and the session cookie is set.
-              // TODO: CSRF protection should be taken into account.
-              // const csrfToken = getCookie('csrfToken')
+              const csrfToken = Cookies.get('_csrf_token');
               return fetch('/auth/token-login', {method: 'POST', headers: {
-                'Authentication': 'Bearer ' + idToken
+                'Authentication': 'Bearer ' + idToken,
+                'X-CSRFToken': csrfToken
               }}).then(function(response) {
                 loggedInContainer.setAttribute("class", "success");
                 window.location.href = nextUrl || "/";
@@ -42,9 +41,7 @@
           //firebase.auth.EmailAuthProvider.PROVIDER_ID,
           //firebase.auth.PhoneAuthProvider.PROVIDER_ID
         ],
-        // TODO: Wire these up.
-        // Terms of service url/callback.
-        tosUrl: '/tos',
+        tosUrl: '/privacy',
         // Privacy policy url/callback.
         privacyPolicyUrl: '/privacy'
       };

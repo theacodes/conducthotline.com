@@ -15,8 +15,10 @@
 import click
 import flask
 import flask_talisman
+import jinja2
 import phonenumbers
 
+import hotline.csrf
 import hotline.auth.webhandlers
 import hotline.events.webhandlers
 import hotline.numberadmin.webhandlers
@@ -24,6 +26,8 @@ import hotline.pages.webhandlers
 import hotline.telephony.webhandlers
 
 app = flask.Flask(__name__)
+hotline.csrf.init_app(app)
+
 flask_talisman.Talisman(app, content_security_policy={
     "default-src": [
         "'self'",
@@ -77,6 +81,14 @@ def phone_format_filter(s):
         )
     except phonenumbers.NumberParseException:
         return s
+
+
+@app.context_processor
+def add_csrf_field_processor():
+    def csrf_field():
+        csrf_token = app.jinja_env.globals["csrf_token"]()
+        return jinja2.Markup(f"<input type=\"hidden\" name=\"_csrf_token\" value=\"{csrf_token}\">")
+    return dict(csrf_field=csrf_field)
 
 
 # Add a default root route.

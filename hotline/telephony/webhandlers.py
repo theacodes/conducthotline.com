@@ -16,12 +16,14 @@ import flask
 
 import hotline.database.ext
 from hotline import injector
+from hotline import csrf
 from hotline.telephony import lowlevel, smschat, verification, voice
 
 blueprint = flask.Blueprint("telephony", __name__)
 hotline.database.ext.init_app(blueprint)
 
 
+@csrf.exempt
 @blueprint.route("/telephony/inbound-sms", methods=["POST"])
 def inbound_sms():
     message = flask.request.get_json()
@@ -45,6 +47,7 @@ def inbound_sms():
 HOLD_MUSIC = "https://assets.ctfassets.net/j7pfe8y48ry3/530pLnJVZmiUu8mkEgIMm2/dd33d28ab6af9a2d32681ae80004886e/oaklawn-dreams.mp3"
 
 
+@csrf.exempt
 @blueprint.route("/telephony/inbound-call", methods=["POST"])
 @injector.needs("nexmo.client")
 def inbound_call(client):
@@ -63,6 +66,7 @@ def inbound_call(client):
     return flask.jsonify(ncco)
 
 
+@csrf.exempt
 @blueprint.route(
     "/telephony/connect-to-conference/<origin_conversation_uuid>/<origin_call_uuid>",
     methods=["POST"],
@@ -83,6 +87,7 @@ def connect_to_conference(origin_conversation_uuid, origin_call_uuid, client):
     return flask.jsonify(ncco)
 
 
+@csrf.exempt
 @blueprint.route("/telephony/event", methods=["POST"])
 def event():
     # For now, we do nothing with these events, but this is required by

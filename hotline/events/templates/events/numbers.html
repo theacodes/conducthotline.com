@@ -83,6 +83,8 @@
     <h3 class="subtitle">Members must verify their number before the hotline will contact them.</h3>
 
     <form method="POST" action="{{url_for(request.endpoint, event_slug=event.slug)}}">
+      {{csrf_field()}}
+
       {% for field in form %}
         <div class="field">
           <label class="label">{{ field.label() }}</label>

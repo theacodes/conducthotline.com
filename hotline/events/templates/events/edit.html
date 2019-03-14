@@ -6,6 +6,8 @@
 {% include "events/nav.html" %}
 
 <form method="POST" action="{{url_for(request.endpoint, event_slug=event.slug)}}">
+  {{csrf_field()}}
+
   {% for field in form %}
     <div class="field">
       <label class="label">{{ field.label() }}</label>

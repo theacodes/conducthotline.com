@@ -12,16 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
+import flask_seasurf
 
-import hotline.config
-import hotline.injector
-from hotline.app import app
+seasurf = flask_seasurf.SeaSurf()
 
-logging.basicConfig(level=logging.INFO)
-
-config = hotline.config.load()
-
-app.secret_key = hotline.injector.get("secrets.session_secret_key")
-
-__all__ = ["app"]
+init_app = seasurf.init_app
+exempt = seasurf.exempt
