@@ -22,7 +22,6 @@ def freeze(session):
     session.install("pip-tools")
     session.run(
         "pip-compile",
-        "--generate-hashes",
         "--output-file",
         "requirements.txt",
         "requirements.in",
