@@ -43,18 +43,20 @@ def auth_required(f):
     def auth_required_view(*args, **kwargs):
         firebase_admin_app = injector.get("firebase_admin_app")
         session_cookie = flask.request.cookies.get(_COOKIE_NAME)
+
         try:
             decoded_claims = firebase_admin.auth.verify_session_cookie(
                 session_cookie, check_revoked=True, app=firebase_admin_app
             )
             flask.g.user = decoded_claims
-            return f(*args, **kwargs)
-        except ValueError:
+        except ValueError as exc:
             # Session cookie is unavailable or invalid. Force user to login.
             return flask.redirect(flask.url_for("auth.login", next=flask.request.path))
-        except firebase_admin.auth.AuthError:
+        except firebase_admin.auth.AuthError as exc:
             # Session revoked. Force user to login.
             return flask.redirect(flask.url_for("auth.login", next=flask.request.path))
+
+        return f(*args, **kwargs)
 
     return auth_required_view
 
