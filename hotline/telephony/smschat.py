@@ -66,10 +66,7 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
         raise NoOrganizersAvailable(f"No organizers found for {event.name}. :/")
 
     # Find an unused number to use for the organizers' relay.
-    # Use the first organizer's number here, as all organizers should be
-    # assigned the same relay anyway.
-    organizer_number = organizers[0].number
-    relay_number = db.find_unused_relay_number(event.primary_number, organizer_number)
+    relay_number = db.find_unused_relay_number(event)
 
     if not relay_number:
         raise NoRelaysAvailable()
@@ -81,7 +78,7 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
         )
 
     # Save the chatroom.
-    db.save_room(chatroom, event=event)
+    db.save_room(chatroom, relay_number=relay_number, event=event)
 
     audit_log.log(
         audit_log.Kind.SMS_CONVERSATION_STARTED,

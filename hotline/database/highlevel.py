@@ -173,6 +173,7 @@ def find_unused_event_numbers() -> List[models.Number]:
             on=(models.Event.primary_number_id == models.Number.id),
         )
         .where(models.Event.primary_number_id.is_null())
+        .where(models.Number.pool == models.NumberPool.EVENT)
         .limit(5)
     )
 
@@ -191,22 +192,21 @@ def acquire_number(event: models.Event) -> str:
         return event.primary_number
 
 
-def find_unused_relay_number(event_number, organizer_number) -> Optional[str]:
-    """Find a relay number that isn't currently used by an existing chatroom
-    connection."""
+def find_unused_relay_number(event: models.Event) -> Optional[str]:
+    """Find a relay number that isn't currently used by the event"""
     # TODO: Should probably be a join, but its unlikely this list will
     # get big enough in the near future to be an issue.
-    used_relay_numbers_query = models.ChatroomConnection.select(
-        models.ChatroomConnection.relay_number
-    ).where(models.ChatroomConnection.user_number == organizer_number)
+
+    # Find all relays currently being used by this event.
+    used_relay_numbers_query = models.SmsChat.select(models.SmsChat.relay_number).where(
+        models.SmsChat.event == event
+    )
 
     used_relay_numbers = [row.relay_number for row in used_relay_numbers_query]
 
-    # Don't use the event number as a relay number
-    used_relay_numbers.append(event_number)
-
     unused_number_query = (
         models.Number.select(models.Number.number)
+        .where(models.Number.pool == models.NumberPool.SMS_RELAY)
         .where(models.Number.number.not_in(used_relay_numbers))
         .limit(1)
     )
@@ -219,16 +219,22 @@ def find_unused_relay_number(event_number, organizer_number) -> Optional[str]:
         return numbers[0]
 
 
-def save_room(room: hotline.chatroom.Chatroom, event: models.Event) -> None:
+def save_room(
+    room: hotline.chatroom.Chatroom, relay_number: str, event: models.Event
+) -> None:
     with models.db.atomic():
-        room_row = models.Chatroom.create(event=event, room=room)
+        smschat = models.SmsChat.create(
+            event=event, room=room, relay_number=relay_number
+        )
 
+        # Create connections so that the sms chat can be looked up by user number
+        # and relay number.
         for connection in room.users:
-            models.ChatroomConnection.create(
+            models.SmsChatConnection.create(
                 user_number=connection.number,
                 relay_number=connection.relay,
                 user_name=connection.name,
-                chatroom=room_row,
+                smschat=smschat,
             )
 
 
@@ -236,13 +242,13 @@ def find_room_by_user_and_relay_numbers(
     user_number: str, relay_number: str
 ) -> Optional[hotline.chatroom.Chatroom]:
     try:
-        connection = models.ChatroomConnection.get(
-            models.ChatroomConnection.user_number == user_number,
-            models.ChatroomConnection.relay_number == relay_number,
+        connection = models.SmsChatConnection.get(
+            models.SmsChatConnection.user_number == user_number,
+            models.SmsChatConnection.relay_number == relay_number,
         )
 
         # This could be faster with a join, but I'm not terribly worried about speed right now.
-        return connection.chatroom.room
+        return connection.smschat.room
 
     except peewee.DoesNotExist:
         return None

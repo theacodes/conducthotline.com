@@ -108,11 +108,13 @@ def create_relays():
     number = db.Number()
     number.number = "1111"
     number.country = "US"
+    number.pool = db.NumberPool.SMS_RELAY
     number.save()
 
     number = db.Number()
     number.number = "2222"
     number.country = "US"
+    number.pool = db.NumberPool.SMS_RELAY
     number.save()
 
     return list(db.Number.select())
@@ -156,15 +158,15 @@ def test_handle_message_new_chat(send_sms, database):
     )
 
     # The database should have an entry for this chat.
-    assert db.Chatroom.select().count() == 1
+    assert db.SmsChat.select().count() == 1
 
     # And three entries for the connections, as there are three people in the
     # chat.
-    room = db.Chatroom.get()
+    room = db.SmsChat.get()
     connections = (
-        db.ChatroomConnection.select()
-        .where(db.ChatroomConnection.chatroom == room)
-        .order_by(db.ChatroomConnection.user_number)
+        db.SmsChatConnection.select()
+        .where(db.SmsChatConnection.smschat == room)
+        .order_by(db.SmsChatConnection.user_number)
     )
     assert len(connections) == 3
     assert connections[0].user_name == "Bob"

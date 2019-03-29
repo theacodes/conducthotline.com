@@ -9,6 +9,7 @@
       <th>Number</th>
       <th>Country</th>
       <th>Event</th>
+      <th>Pool</th>
       <th></th>
     </tr>
   </thead>
@@ -24,6 +25,9 @@
           </a>
         {% endif %}
       </td>
+      <td>
+        {{NumberPool(number.pool).name.replace("_", " ")|title}}
+      </td>
       <td class="has-text-right">
         <a class="button is-primary" href="{{url_for('.details', number=number.number)}}">Details</a>
       </td>
@@ -33,6 +37,7 @@
 </table>
 
 <div class="container">
-  <a class="button is-primary" href="{{url_for('.rent')}}">Rent new number</a>
+  <a class="button is-primary" href="{{url_for('.rent', pool=NumberPool.EVENT.value)}}">Rent new event number</a>
+  <a class="button is-primary" href="{{url_for('.rent', pool=NumberPool.SMS_RELAY.value)}}">Rent new sms relay number</a>
 </div>
 {% endblock %}

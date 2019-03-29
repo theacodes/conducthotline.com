@@ -31,6 +31,7 @@ def list():
     numbers = models.Number.select(
         models.Number.number,
         models.Number.country,
+        models.Number.pool,
         models.Event.name,
         models.Event.slug,
     ).join(
@@ -39,7 +40,9 @@ def list():
         on=(models.Event.primary_number_id == models.Number.id),
     )
 
-    return flask.render_template("numberadmin/list.html", numbers=numbers)
+    return flask.render_template(
+        "numberadmin/list.html", numbers=numbers, NumberPool=models.NumberPool
+    )
 
 
 @blueprint.route("/admin/numbers/<number>/details")
@@ -59,7 +62,11 @@ def details(number):
     info = hotline.telephony.lowlevel.get_number_info(number)
 
     return flask.render_template(
-        "numberadmin/details.html", number=number_entry, event=event, info=info
+        "numberadmin/details.html",
+        number=number_entry,
+        event=event,
+        info=info,
+        NumberPool=models.NumberPool,
     )
 
 
@@ -70,9 +77,12 @@ def rent():
         sms_callback_url=flask.url_for("telephony.inbound_sms", _external=True)
     )
 
+    pool = models.NumberPool(int(flask.request.values["pool"]))
+
     number_record = models.Number()
     number_record.number = number["msisdn"]
     number_record.country = number["country"]
+    number_record.pool = pool
     number_record.save()
 
     return flask.redirect(flask.url_for(".list"))

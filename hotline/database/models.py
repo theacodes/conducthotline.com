@@ -16,6 +16,7 @@
 stuff into the higher-level interface."""
 
 import datetime
+import enum
 
 import peewee
 
@@ -41,9 +42,15 @@ class SerializableField(peewee.TextField):
         return self._cls.deserialize(value)
 
 
+class NumberPool(enum.IntEnum):
+    EVENT = 1
+    SMS_RELAY = 2
+
+
 class Number(BaseModel):
     number = peewee.TextField()
     country = peewee.CharField(default="US")
+    pool = peewee.IntegerField(default=NumberPool.EVENT)
 
 
 Number.add_index(Number.number)
@@ -97,22 +104,27 @@ class EventOrganizer(BaseModel):
 EventOrganizer.add_index(EventOrganizer.user_id)
 
 
-class Chatroom(BaseModel):
+class SmsChat(BaseModel):
+    timestamp = peewee.DateTimeField(default=datetime.datetime.utcnow)
     event = peewee.ForeignKeyField(Event)
     room = SerializableField(hotline.chatroom.Chatroom)
+    relay_number = peewee.CharField()
 
 
-class ChatroomConnection(BaseModel):
+class SmsChatConnection(BaseModel):
+    """Model used for looking up SMS chats based on a combination of the
+    user's number and the relay number."""
+
     user_number = peewee.CharField()
     relay_number = peewee.CharField()
     user_name = peewee.CharField()
-    chatroom = peewee.ForeignKeyField(Chatroom, backref="connections")
+    smschat = peewee.ForeignKeyField(SmsChat, backref="connections")
 
     class Meta:
         primary_key = peewee.CompositeKey("user_number", "relay_number")
 
 
-ChatroomConnection.add_index(ChatroomConnection.user_number)
+SmsChatConnection.add_index(SmsChatConnection.user_number)
 
 
 class AuditLog(BaseModel):
