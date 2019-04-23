@@ -20,12 +20,7 @@ import nox
 @nox.session(python="3.7")
 def freeze(session):
     session.install("pip-tools")
-    session.run(
-        "pip-compile",
-        "--output-file",
-        "requirements.txt",
-        "requirements.in",
-    )
+    session.run("pip-compile", "--output-file", "requirements.txt", "requirements.in")
 
 
 @nox.session(python="3.7")
