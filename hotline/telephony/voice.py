@@ -152,4 +152,11 @@ def handle_member_answer(
         },
     ]
 
+    audit_log.log(
+        audit_log.Kind.VOICE_CONVERSATION_ANSWERED,
+        description=f"{member.name} answered {origin_conversation_uuid}.",
+        user="{member.name}",
+        event=event,
+    )
+
     return ncco

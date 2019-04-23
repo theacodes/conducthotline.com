@@ -30,6 +30,7 @@ class Kind(enum.IntEnum):
     NUMBER_RELEASED = 8
     ORGANIZER_ADDED = 9
     ORGANIZER_REMOVED = 10
+    VOICE_CONVERSATION_ANSWERED = 11
 
 
 def log(
