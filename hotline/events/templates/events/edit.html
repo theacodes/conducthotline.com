@@ -16,7 +16,7 @@
       </div>
       {% if field.description %}
         <p class="help">
-            {{field.description}}
+            {{field.description|safe}}
         </p>
       {% endif %}
       {% if field.errors %}

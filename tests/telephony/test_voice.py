@@ -143,6 +143,28 @@ def test_handle_inbound_call(database):
     assert "example.com" in calls_created[1]["answer_url"][0]
 
 
+def test_handle_inbound_call_custom_greeting(database):
+    event = create_event()
+    add_members(event)
+
+    nexmo_client = mock.create_autospec(nexmo.Client)
+
+    event.voice_greeting = "Ahoyhoy!"
+    event.save()
+
+    ncco = voice.handle_inbound_call(
+        event_number="5678",
+        conversation_uuid="conversation",
+        call_uuid="call",
+        host="example.com",
+        client=nexmo_client,
+    )
+
+    # The caller should have been greeted with the custom greeting.
+    assert ncco[0]["action"] == "talk"
+    assert ncco[0]["text"] == "Ahoyhoy!"
+
+
 def test_handle_member_answer_no_event(database):
     nexmo_client = mock.create_autospec(nexmo.Client)
 

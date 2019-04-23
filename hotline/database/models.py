@@ -72,6 +72,10 @@ class Event(BaseModel):
     contact_email = peewee.TextField(null=True, index=False)
     location = peewee.TextField(null=True, index=False)
 
+    # Customizations.
+    voice_greeting = peewee.TextField(null=True, index=False)
+    sms_greeting = peewee.TextField(null=True, index=False)
+
 
 Event.add_index(Event.slug)
 Event.add_index(Event.primary_number)

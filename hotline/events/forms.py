@@ -15,6 +15,8 @@
 import phonenumbers
 import wtforms
 
+from hotline import common_text
+
 
 class EventEditForm(wtforms.Form):
     name = wtforms.StringField(
@@ -36,6 +38,12 @@ class EventEditForm(wtforms.Form):
     )
     location = wtforms.StringField(
         description="Displayed on the public view for your event."
+    )
+    voice_greeting = wtforms.TextField(
+        description=f"Spoken when a person calls the hotline. By default, this is <code>{common_text.voice_default_greeting}</code>."
+    )
+    sms_greeting = wtforms.TextField(
+        description=f"Sent when a person texts the hotline. By default, this is <code>{common_text.sms_default_greeting}</code>."
     )
 
 

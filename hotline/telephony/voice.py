@@ -52,7 +52,10 @@ def handle_inbound_call(
         return error_ncco
 
     # Great, we have an event. Greet the user.
-    greeting = common_text.voice_default_greeting.format(event=event)
+    if event.voice_greeting is not None and event.voice_greeting.strip():
+        greeting = event.voice_greeting
+    else:
+        greeting = common_text.voice_default_greeting.format(event=event)
 
     # NCCOs to be given to the caller.
     reporter_nccos: List[dict] = []

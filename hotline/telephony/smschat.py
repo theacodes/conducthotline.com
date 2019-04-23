@@ -86,12 +86,14 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
         event=event,
     )
 
+    # Determine the greeting.
+    if event.sms_greeting is not None and event.sms_greeting.strip():
+        greeting = event.sms_greeting
+    else:
+        greeting = common_text.sms_default_greeting.format(event=event)
+
     # Send welcome messages.
-    lowlevel.send_sms(
-        sender=event_number,
-        to=reporter_number,
-        message=common_text.sms_default_greeting.format(event=event),
-    )
+    lowlevel.send_sms(sender=event_number, to=reporter_number, message=greeting)
 
     for organizer in organizers:
         lowlevel.send_sms(
