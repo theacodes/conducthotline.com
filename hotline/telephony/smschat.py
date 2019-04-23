@@ -20,7 +20,7 @@ initiating a *new* chatroom when a reporter messages an event's number.
 """
 
 import hotline.chatroom
-from hotline import audit_log
+from hotline import audit_log, common_text
 from hotline.database import highlevel as db
 from hotline.database import models
 from hotline.telephony import lowlevel
@@ -53,7 +53,7 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
     event = db.get_event_by_number(event_number)
 
     if not event:
-        raise EventDoesNotExist(f"No event for number {event_number}.")
+        raise EventDoesNotExist()
 
     # Create a chatroom
     chatroom = hotline.chatroom.Chatroom()
@@ -63,7 +63,7 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
     organizers = list(db.get_verified_event_members(event))
 
     if not organizers:
-        raise NoOrganizersAvailable(f"No organizers found for {event.name}. :/")
+        raise NoOrganizersAvailable()
 
     # Find an unused number to use for the organizers' relay.
     relay_number = db.find_unused_relay_number(event)
@@ -90,14 +90,16 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
     lowlevel.send_sms(
         sender=event_number,
         to=reporter_number,
-        message=f"You have started a new chat with the organizers of {event.name}.",
+        message=common_text.sms_default_greeting.format(event=event),
     )
 
     for organizer in organizers:
         lowlevel.send_sms(
             sender=relay_number,
             to=organizer.number,
-            message=f"This is the beginning of a new chat for {event.name}, the last 4 digits of the reporters number are {reporter_number[-4:]}.",
+            message=common_text.sms_introduction.format(
+                event=event, reporter_number=reporter_number[-4:]
+            ),
         )
 
     return chatroom
@@ -125,20 +127,8 @@ def handle_message(sender: str, relay: str, message: str):
 
 def handle_sms_chat_error(err: SmsChatError, sender: str, relay: str):
     if isinstance(err, EventDoesNotExist):
-        lowlevel.send_sms(
-            sender=relay,
-            to=sender,
-            message="Sorry, there doesn't seem to be an event configured for that number.",
-        )
+        lowlevel.send_sms(sender=relay, to=sender, message=common_text.sms_no_event)
     elif isinstance(err, NoOrganizersAvailable):
-        lowlevel.send_sms(
-            sender=relay,
-            to=sender,
-            message="Sorry, there aren't any organizers currently available. Please reach out to the event staff in person for assistance.",
-        )
+        lowlevel.send_sms(sender=relay, to=sender, message=common_text.sms_no_members)
     elif isinstance(err, NoRelaysAvailable):
-        lowlevel.send_sms(
-            sender=relay,
-            to=sender,
-            message="Sorry, there aren't any relays available to send your message. You can try calling the hotline or reaching out to the event staff in person for assistance.",
-        )
+        lowlevel.send_sms(sender=relay, to=sender, message=common_text.sms_no_relays)

@@ -145,12 +145,12 @@ def test_handle_message_new_chat(send_sms, database):
             mock.call(
                 sender="1111",
                 to="101",
-                message="This is the beginning of a new chat for Test event, the last 4 digits of the reporters number are 1234.",
+                message="This is the beginning of a new chat for Test event, the last 4 digits of the reporter's number are 1234.",
             ),
             mock.call(
                 sender="1111",
                 to="202",
-                message="This is the beginning of a new chat for Test event, the last 4 digits of the reporters number are 1234.",
+                message="This is the beginning of a new chat for Test event, the last 4 digits of the reporter's number are 1234.",
             ),
             mock.call(sender="1111", to="101", message="Reporter: Hello"),
             mock.call(sender="1111", to="202", message="Reporter: Hello"),

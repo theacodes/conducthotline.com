@@ -22,7 +22,7 @@ from typing import List
 
 import nexmo
 
-from hotline import audit_log, injector
+from hotline import audit_log, common_text, injector
 from hotline.database import highlevel as db
 
 HOLD_MUSIC = "https://assets.ctfassets.net/j7pfe8y48ry3/530pLnJVZmiUu8mkEgIMm2/dd33d28ab6af9a2d32681ae80004886e/oaklawn-dreams.mp3"
@@ -41,34 +41,18 @@ def handle_inbound_call(
     event = db.get_event_by_number(event_number)
 
     if event is None:
-        error_ncco = [
-            {
-                "action": "talk",
-                "text": "No event was found for this number. Please reach out to the event staff directly for assistance.",
-            }
-        ]
+        error_ncco = [{"action": "talk", "text": common_text.voice_no_event}]
         return error_ncco
 
     # Get the members for the event. If there are no members, tell the user. :(
     event_members = list(db.get_verified_event_members(event))
 
     if not event_members:
-        error_ncco = [
-            {
-                "action": "talk",
-                "text": (
-                    "Unfortunately, there are no verified members for this event's hotline. "
-                    "Please reach out to the event staff directly for assistance."
-                ),
-            }
-        ]
+        error_ncco = [{"action": "talk", "text": common_text.voice_no_members}]
         return error_ncco
 
     # Great, we have an event. Greet the user.
-    greeting = (
-        f"Thank you for calling the Code of Conduct hotline for {event.name}. This will dial all "
-        f"of the hotline members and put you on hold until one is able to answer."
-    )
+    greeting = common_text.voice_default_greeting.format(event=event)
 
     # NCCOs to be given to the caller.
     reporter_nccos: List[dict] = []
@@ -126,23 +110,19 @@ def handle_member_answer(
     event = db.get_event_by_number(event_number)
 
     if member is None or event is None:
-        error_ncco = [
-            {
-                "action": "talk",
-                "text": (
-                    "Oh no, an error occurred and we couldn't find the event or "
-                    "member entry for this call."
-                ),
-            }
-        ]
+        error_ncco = [{"action": "talk", "text": common_text.voice_answer_error}]
         return error_ncco
 
-    client.send_speech(origin_call_uuid, text=f"{member.name} is joining this call.")
+    client.send_speech(
+        origin_call_uuid, text=common_text.voice_answer_announce.format(member=member)
+    )
 
     ncco = [
         {
             "action": "talk",
-            "text": f"Hello {member.name}, connecting you to {event.name}.",
+            "text": common_text.voice_answer_greeting.format(
+                member=member, event=event
+            ),
         },
         {
             "action": "conversation",
