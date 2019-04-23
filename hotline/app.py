@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import importlib
+
 import click
 import flask
 import flask_talisman
@@ -141,3 +143,32 @@ def manual_add_number(number, sms_callback_url):
         number_entry.number = hotline.telephony.lowlevel.normalize_number(number)
         number_entry.country = "US"
         number_entry.save()
+
+
+@app.cli.command()
+@click.argument("step")
+def apply_migration(step):
+    import peewee
+    import playhouse.migrate
+    from hotline.database import models
+
+    migrations_module = importlib.import_module(
+        f".{step}", package="hotline.database.migrations"
+    )
+
+    if isinstance(models.db.obj, peewee.peewee.SqliteDatabase):
+        migrator = playhouse.migrate.SqliteMigrator(models.db)
+    else:
+        migrator = playhouse.migrate.PostgresqlMigrator(models.db)
+
+    migrations = migrations_module.migrate(migrator)
+
+    print(f"The following migrations are about to be applied to {models.db.obj}:")
+    for migration in migrations:
+        print(" * ", migration.method, migration.args)
+
+    input("Press enter to continue.")
+
+    playhouse.migrate.migrate(*migrations)
+
+    print("Done.")
