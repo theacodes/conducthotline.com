@@ -28,7 +28,7 @@ grpcio==1.19.0            # via google-api-core
 gunicorn==19.9.0
 idna==2.8                 # via requests
 itsdangerous==1.1.0       # via flask
-jinja2==2.10              # via flask
+jinja2==2.10.1
 markupsafe==1.1.1         # via jinja2
 msgpack==0.6.1            # via cachecontrol
 nexmo==2.3.0
@@ -45,6 +45,6 @@ requests==2.21.0          # via cachecontrol, google-api-core, nexmo
 rsa==4.0                  # via google-auth
 six==1.12.0               # via cryptography, firebase-admin, flask-talisman, google-api-core, google-auth, google-resumable-media, grpcio, protobuf
 typing-extensions==3.7.2
-urllib3==1.24.1           # via requests
+urllib3==1.24.2
 werkzeug==0.14.1          # via flask
 wtforms==2.2.1

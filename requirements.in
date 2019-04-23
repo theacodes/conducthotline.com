@@ -10,3 +10,7 @@ phonenumbers
 cmarkgfm
 flask-talisman
 flask-seasurf
+
+# Packages with volunerabilities so require minimum versions.
+urllib3>=1.24.2
+jinja2>=2.10.1
