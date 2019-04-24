@@ -33,6 +33,7 @@ class Kind(enum.IntEnum):
     VOICE_CONVERSATION_ANSWERED = 11
     NUMBER_BLOCKED = 12
     NUMBER_UNBLOCKED = 13
+    CHAT_DELETED = 14
 
 
 def log(

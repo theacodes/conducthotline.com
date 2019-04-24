@@ -1,0 +1,54 @@
+{% extends "admin-layout.html" %}
+
+{% block title %}{{event.name}}{% endblock %}
+
+{% block content %}
+{% include "events/nav.html" %}
+{% endblock %}
+
+{% block extra_sections %}
+<section class="">
+  <div class="container">
+    <h2 class="title">Relay status</h2>
+    <h3 class="subtitle">Remaining relays: <code>{{remaining_relays}}</code>.</h3>
+    <p>Relays are used when a new chat is started between a reporter and the
+    hotline. If no relays are available, the reporter will be instructed to call or reach out in person. You can free up relays by removing old chats or you can contact the admin to have more relays added. Removing old chats
+    does not prevent the user from reaching out again. If a user reaches out
+    after the chat has been removed the hotline will just treat it as a new
+    chat.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <table class="table is-fullwidth is-striped is-hoverable">
+      <thead>
+        <tr>
+          <th>When</th>
+          <th>Relay</th>
+          <th>Reporter</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for chat in chats %}
+        <tr>
+          <td>{{chat.timestamp|htmldate}}</td>
+          <td>{{chat.relay_number}}</td>
+          <td>
+            {% set reporter = chat.room.get_user_by_name("Reporter") %}
+            {% if reporter %}
+              {{reporter.number[-4:]}}
+            {% else %}
+              Unknown?
+            {% endif %}
+          </td>
+          <td class="has-text-right">
+            <a class="button is-danger" href="{{url_for('.remove_chat', event_slug=event.slug, chat_id=chat.id)}}">Remove</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

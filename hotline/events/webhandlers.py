@@ -242,6 +242,24 @@ def acquire(event, user):
     return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
 
 
+@blueprint.route("/manage/events/<event_slug>/chats")
+@event_access_required
+def chats(event, user):
+    chats = db.get_chats_for_event(event)
+    remaining_relays = db.get_remaining_relays_for_event(event)
+
+    return flask.render_template(
+        "events/chats.html", event=event, chats=chats, remaining_relays=remaining_relays
+    )
+
+
+@blueprint.route("/manage/events/<event_slug>/chats/remove/<chat_id>")
+@event_access_required
+def remove_chat(event, user, chat_id):
+    db.remove_event_chat(event=event, chat_id=chat_id, user=user)
+    return flask.redirect(flask.url_for(".chats", event_slug=event.slug))
+
+
 @blueprint.route("/manage/events/<event_slug>/logs")
 @event_access_required
 def logs(event, user):

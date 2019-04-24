@@ -192,8 +192,9 @@ def acquire_number(event: models.Event) -> str:
         return event.primary_number
 
 
-def find_unused_relay_number(event: models.Event) -> Optional[str]:
-    """Find a relay number that isn't currently used by the event"""
+def get_unused_relay_numbers_for_event(
+    event: models.Event, limit: int = 1
+) -> List[str]:
     # TODO: Should probably be a join, but its unlikely this list will
     # get big enough in the near future to be an issue.
 
@@ -208,11 +209,21 @@ def find_unused_relay_number(event: models.Event) -> Optional[str]:
         models.Number.select(models.Number.number)
         .where(models.Number.pool == models.NumberPool.SMS_RELAY)
         .where(models.Number.number.not_in(used_relay_numbers))
-        .limit(1)
+        .limit(limit)
     )
 
     numbers = [row.number for row in unused_number_query]
 
+    return numbers
+
+
+def get_remaining_relays_for_event(event: models.Event) -> int:
+    return len(get_unused_relay_numbers_for_event(event, limit=1000))
+
+
+def find_unused_relay_number(event: models.Event) -> Optional[str]:
+    """Find a relay number that isn't currently used by the event"""
+    numbers = get_unused_relay_numbers_for_event(event)
     if not numbers:
         return None
     else:
@@ -252,6 +263,34 @@ def find_room_by_user_and_relay_numbers(
 
     except peewee.DoesNotExist:
         return None
+
+
+def remove_event_chat(event: models.Event, chat_id: str, user: dict):
+    item = models.SmsChat.get(
+        models.SmsChat.event == event, models.SmsChat.id == int(chat_id)
+    )
+
+    item.delete_instance()
+
+    # Delete all connections
+    models.SmsChatConnection.delete().where(
+        models.SmsChatConnection.smschat == item
+    ).execute()
+
+    audit_log.log(
+        kind=audit_log.Kind.CHAT_DELETED,
+        description=f"{user['name']} deleted the chat with the relay number {item.relay_number}.",
+        event=event,
+        user=user["user_id"],
+    )
+
+
+def get_chats_for_event(event: models.Event):
+    return (
+        models.SmsChat.select()
+        .where(models.SmsChat.event == event)
+        .order_by(-models.SmsChat.timestamp)
+    )
 
 
 def get_logs_for_event(event: models.Event):

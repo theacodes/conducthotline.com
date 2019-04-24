@@ -30,7 +30,7 @@ way of sending or receiving messages.
 
 import json
 from collections import namedtuple
-from typing import Any
+from typing import Any, Optional
 
 from typing_extensions import Protocol
 
@@ -52,6 +52,12 @@ class Chatroom:
     @property
     def users(self):
         return self._users.values()
+
+    def get_user_by_name(self, name: str) -> Optional[_User]:
+        for user in self._users.values():
+            if user.name == name:
+                return user
+        return None
 
     def relay(self, user_number: str, message: str, send_message: SendFn):
         sender = self._users[user_number]
