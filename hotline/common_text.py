@@ -14,6 +14,7 @@
 
 
 voice_no_event = "No event was found for this number. Please reach out to the event staff directly for assistance."
+voice_blocked = "This number is currently unavailable."
 voice_no_members = "Unfortunately, there are no verified members for this event's hotline. Please reach out to the event staff directly for assistance."
 voice_default_greeting = "Thank you for calling the Code of Conduct hotline for {event.name}. This will dial all of the hotline members and put you on hold until one is able to answer."
 voice_answer_error = "Oh no, an error occurred and we couldn't find the event or member entry for this call."

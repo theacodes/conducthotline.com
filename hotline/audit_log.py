@@ -31,14 +31,21 @@ class Kind(enum.IntEnum):
     ORGANIZER_ADDED = 9
     ORGANIZER_REMOVED = 10
     VOICE_CONVERSATION_ANSWERED = 11
+    NUMBER_BLOCKED = 12
+    NUMBER_UNBLOCKED = 13
 
 
 def log(
-    kind: Kind, description: str, event: models.Event = None, user: str = None
+    kind: Kind,
+    description: str,
+    event: models.Event = None,
+    user: str = None,
+    reporter_number: str = None,
 ) -> None:
     audit_log = models.AuditLog()
     audit_log.kind = kind
     audit_log.description = description
     audit_log.event = event
     audit_log.user = user
+    audit_log.reporter_number = reporter_number
     audit_log.save()

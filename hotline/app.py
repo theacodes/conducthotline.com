@@ -156,7 +156,7 @@ def apply_migration(step):
         f".{step}", package="hotline.database.migrations"
     )
 
-    if isinstance(models.db.obj, peewee.peewee.SqliteDatabase):
+    if isinstance(models.db.obj, peewee.SqliteDatabase):
         migrator = playhouse.migrate.SqliteMigrator(models.db)
     else:
         migrator = playhouse.migrate.PostgresqlMigrator(models.db)

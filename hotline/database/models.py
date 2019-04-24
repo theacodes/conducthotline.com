@@ -138,6 +138,14 @@ class AuditLog(BaseModel):
     event = peewee.ForeignKeyField(Event, backref="auditlogs", null=True)
     user = peewee.CharField(null=True)
     metadata = peewee.TextField(null=True)
+    reporter_number = peewee.TextField(null=True, index=False)
 
 
 AuditLog.add_index(AuditLog.event, AuditLog.timestamp)
+
+
+class BlockList(BaseModel):
+    timestamp = peewee.DateTimeField(default=datetime.datetime.utcnow)
+    event = peewee.ForeignKeyField(Event, backref="blocklist")
+    number = peewee.TextField()
+    blocked_by = peewee.TextField(null=True)

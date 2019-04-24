@@ -34,6 +34,10 @@ class EventDoesNotExist(SmsChatError):
     pass
 
 
+class NumberBlocked(SmsChatError):
+    pass
+
+
 class NoOrganizersAvailable(SmsChatError):
     pass
 
@@ -54,6 +58,10 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
 
     if not event:
         raise EventDoesNotExist()
+
+    # Make sure the number isn't blocked.
+    if db.check_if_blocked(event=event, number=reporter_number):
+        raise NumberBlocked()
 
     # Create a chatroom
     chatroom = hotline.chatroom.Chatroom()
@@ -82,8 +90,9 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
 
     audit_log.log(
         audit_log.Kind.SMS_CONVERSATION_STARTED,
-        description=f"A new sms conversation was started last 4 digits of number is {reporter_number[-4:]}",
+        description=f"A new sms conversation was started. Last 4 digits of number is {reporter_number[-4:]}",
         event=event,
+        reporter_number=reporter_number,
     )
 
     # Determine the greeting.
@@ -130,6 +139,8 @@ def handle_message(sender: str, relay: str, message: str):
 def handle_sms_chat_error(err: SmsChatError, sender: str, relay: str):
     if isinstance(err, EventDoesNotExist):
         lowlevel.send_sms(sender=relay, to=sender, message=common_text.sms_no_event)
+    elif isinstance(err, NumberBlocked):
+        pass
     elif isinstance(err, NoOrganizersAvailable):
         lowlevel.send_sms(sender=relay, to=sender, message=common_text.sms_no_members)
     elif isinstance(err, NoRelaysAvailable):

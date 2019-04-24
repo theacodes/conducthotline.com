@@ -37,6 +37,7 @@ def test_handle_inbound_call_no_event(database):
     nexmo_client = mock.create_autospec(nexmo.Client)
 
     ncco = voice.handle_inbound_call(
+        reporter_number="1234",
         event_number="5678",
         conversation_uuid="conversation",
         call_uuid="call",
@@ -65,6 +66,27 @@ def create_event():
     return event
 
 
+def test_handle_inbound_call_blocked(database):
+    event = create_event()
+    add_unverfied_members(event)
+
+    nexmo_client = mock.create_autospec(nexmo.Client)
+
+    db.BlockList.create(event=event, number="1234", blocked_by="test")
+
+    ncco = voice.handle_inbound_call(
+        reporter_number="1234",
+        event_number="5678",
+        conversation_uuid="conversation",
+        call_uuid="call",
+        host="example.com",
+        client=nexmo_client,
+    )
+
+    assert len(ncco) == 1
+    assert "unavailable" in ncco[0]["text"]
+
+
 def add_unverfied_members(event):
     member = db.EventMember()
     member.name = "Unverified Judy"
@@ -81,6 +103,7 @@ def test_handle_inbound_call_no_members(database):
     nexmo_client = mock.create_autospec(nexmo.Client)
 
     ncco = voice.handle_inbound_call(
+        reporter_number="1234",
         event_number="5678",
         conversation_uuid="conversation",
         call_uuid="call",
@@ -115,6 +138,7 @@ def test_handle_inbound_call(database):
     nexmo_client = mock.create_autospec(nexmo.Client)
 
     ncco = voice.handle_inbound_call(
+        reporter_number="1234",
         event_number="5678",
         conversation_uuid="conversation",
         call_uuid="call",
@@ -153,6 +177,7 @@ def test_handle_inbound_call_custom_greeting(database):
     event.save()
 
     ncco = voice.handle_inbound_call(
+        reporter_number="1234",
         event_number="5678",
         conversation_uuid="conversation",
         call_uuid="call",

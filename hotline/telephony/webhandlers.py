@@ -52,10 +52,12 @@ HOLD_MUSIC = "https://assets.ctfassets.net/j7pfe8y48ry3/530pLnJVZmiUu8mkEgIMm2/d
 def inbound_call(client):
     call = flask.request.get_json()
     event_number = lowlevel.normalize_number(call["to"])
+    reporter_number = lowlevel.normalize_number(call["from"])
     conversation_uuid = call["conversation_uuid"]
     call_uuid = call["uuid"]
 
     ncco = voice.handle_inbound_call(
+        reporter_number=reporter_number,
         event_number=event_number,
         conversation_uuid=conversation_uuid,
         call_uuid=call_uuid,

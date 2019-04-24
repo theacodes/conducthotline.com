@@ -20,7 +20,7 @@ import peewee
 
 import hotline.chatroom
 import playhouse.db_url
-from hotline import injector
+from hotline import audit_log, injector
 from hotline.database import models
 
 
@@ -260,3 +260,53 @@ def get_logs_for_event(event: models.Event):
         .where(models.AuditLog.event == event)
         .order_by(-models.AuditLog.timestamp)
     )
+
+
+def get_blocklist_for_event(event: models.Event):
+    return (
+        models.BlockList.select()
+        .where(models.BlockList.event == event)
+        .order_by(-models.BlockList.timestamp)
+    )
+
+
+def create_blocklist_item(event: models.Event, log_id: str, user: dict):
+    log = models.AuditLog.get(
+        models.AuditLog.event == event, models.AuditLog.id == int(log_id)
+    )
+
+    models.BlockList.create(
+        event=event, number=log.reporter_number, blocked_by=user["name"]
+    )
+
+    audit_log.log(
+        kind=audit_log.Kind.NUMBER_BLOCKED,
+        description=f"{user['name']} blocked the number ending in {log.reporter_number[-4:]}.",
+        event=event,
+        user=user["user_id"],
+    )
+
+
+def remove_blocklist_item(event: models.Event, blocklist_id: str, user: dict):
+    item = models.BlockList.get(
+        models.BlockList.event == event, models.BlockList.id == int(blocklist_id)
+    )
+
+    item.delete_instance()
+
+    audit_log.log(
+        kind=audit_log.Kind.NUMBER_UNBLOCKED,
+        description=f"{user['name']} unblocked the number ending in {item.number[-4:]}.",
+        event=event,
+        user=user["user_id"],
+    )
+
+
+def check_if_blocked(event: models.Event, number: str):
+    try:
+        models.BlockList.get(
+            models.BlockList.event == event, models.BlockList.number == number
+        )
+        return True
+    except peewee.DoesNotExist:
+        return False

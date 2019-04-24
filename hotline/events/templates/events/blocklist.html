@@ -9,21 +9,19 @@
   <thead>
     <tr>
       <th>When</th>
-      <th>Kind</th>
-      <th>Description</th>
+      <th>Number</th>
+      <th>Blocked by</th>
       <th></th>
     </tr>
   </thead>
   <tbody>
-    {% for log in logs %}
+    {% for blocked in blocklist %}
     <tr>
-      <td>{{log.timestamp.isoformat()}}</td>
-      <td>{{Kind(log.kind).name.replace("_", " ")|title}}</td>
-      <td>{{log.description}}</td>
+      <td>{{blocked.timestamp.isoformat()}}</td>
+      <td>{{blocked.number[-4:]}}</td>
+      <td>{{blocked.blocked_by}}</td>
       <td class="has-text-right">
-        {% if log.reporter_number: %}
-          <a class="button is-danger" href="{{url_for('.block', event_slug=event.slug, log_id=log.id)}}">Block</a>
-        {% endif %}
+        <a class="button is-warning" href="{{url_for('.unblock', event_slug=event.slug, blocklist_id=blocked.id)}}">Unblock</a>
       </td>
     </tr>
     {% endfor %}

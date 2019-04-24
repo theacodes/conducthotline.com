@@ -250,3 +250,27 @@ def logs(event, user):
     return flask.render_template(
         "events/logs.html", event=event, logs=logs, Kind=audit_log.Kind
     )
+
+
+@blueprint.route("/manage/events/<event_slug>/blocklist")
+@event_access_required
+def blocklist(event, user):
+    blocklist = db.get_blocklist_for_event(event)
+
+    return flask.render_template(
+        "events/blocklist.html", event=event, blocklist=blocklist
+    )
+
+
+@blueprint.route("/manage/events/<event_slug>/block/<log_id>")
+@event_access_required
+def block(event, user, log_id):
+    db.create_blocklist_item(event=event, log_id=log_id, user=user)
+    return flask.redirect(flask.url_for(".blocklist", event_slug=event.slug))
+
+
+@blueprint.route("/manage/events/<event_slug>/unblock/<blocklist_id>")
+@event_access_required
+def unblock(event, user, blocklist_id):
+    db.remove_blocklist_item(event=event, blocklist_id=blocklist_id, user=user)
+    return flask.redirect(flask.url_for(".blocklist", event_slug=event.slug))

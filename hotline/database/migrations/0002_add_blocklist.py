@@ -12,29 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Recreates database tables / does migrations."""
+import peewee
 
-import hotline.config
-from hotline.database import models as db
-
-models = [
-    db.Number,
-    db.Event,
-    db.EventMember,
-    db.EventOrganizer,
-    db.SmsChat,
-    db.SmsChatConnection,
-    db.AuditLog,
-    db.BlockList,
-]
+from hotline.database import models
 
 
-def create_tables():
-    with db.db:
-        db.db.drop_tables(models)
-        db.db.create_tables(models)
+class CreateModels:
+    method = "create_tables"
+    args = [models.BlockList]
+
+    def run(self):
+        models.db.create_tables(self.args)
 
 
-if __name__ == "__main__":
-    hotline.config.load()
-    create_tables()
+def migrate(migrator):
+    return [
+        migrator.add_column(
+            "auditlog", "reporter_number", peewee.TextField(null=True, index=False)
+        ),
+        CreateModels(),
+    ]

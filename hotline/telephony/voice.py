@@ -30,6 +30,7 @@ HOLD_MUSIC = "https://assets.ctfassets.net/j7pfe8y48ry3/530pLnJVZmiUu8mkEgIMm2/d
 
 @injector.needs("nexmo.client")
 def handle_inbound_call(
+    reporter_number: str,
     event_number: str,
     conversation_uuid: str,
     call_uuid: str,
@@ -42,6 +43,11 @@ def handle_inbound_call(
 
     if event is None:
         error_ncco = [{"action": "talk", "text": common_text.voice_no_event}]
+        return error_ncco
+
+    # Make sure the number isn't blocked.
+    if db.check_if_blocked(event=event, number=reporter_number):
+        error_ncco = [{"action": "talk", "text": common_text.voice_blocked}]
         return error_ncco
 
     # Get the members for the event. If there are no members, tell the user. :(
@@ -90,8 +96,9 @@ def handle_inbound_call(
 
     audit_log.log(
         audit_log.Kind.VOICE_CONVERSATION_STARTED,
-        description=f"A new voice conversation was started, uuid is {conversation_uuid}",
+        description=f"A new voice conversation was started. UUID is {conversation_uuid[-12:]}. Last four digits of number is {reporter_number[-4:]}",
         event=event,
+        reporter_number=reporter_number,
     )
 
     return reporter_nccos
@@ -137,7 +144,7 @@ def handle_member_answer(
 
     audit_log.log(
         audit_log.Kind.VOICE_CONVERSATION_ANSWERED,
-        description=f"{member.name} answered {origin_conversation_uuid}.",
+        description=f"{member.name} answered {origin_conversation_uuid[-12:]}.",
         user="{member.name}",
         event=event,
     )
