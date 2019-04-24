@@ -79,6 +79,12 @@ def phone_format_filter(s):
         return s
 
 
+@app.template_filter("htmldate")
+def htmldate_filter(d):
+    formatted_date = d.strftime("%Y-%m-%d %H:%M UTC")
+    return jinja2.Markup(f'<span title="{d.isoformat()}">{formatted_date}</span>')
+
+
 @app.context_processor
 def add_csrf_field_processor():
     def csrf_field():

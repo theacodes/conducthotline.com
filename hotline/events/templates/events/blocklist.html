@@ -17,7 +17,7 @@
   <tbody>
     {% for blocked in blocklist %}
     <tr>
-      <td>{{blocked.timestamp.isoformat()}}</td>
+      <td>{{blocked.timestamp|htmldate}}</td>
       <td>{{blocked.number[-4:]}}</td>
       <td>{{blocked.blocked_by}}</td>
       <td class="has-text-right">
