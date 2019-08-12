@@ -53,6 +53,7 @@ def create_event():
     number = db.Number()
     number.number = "5678"
     number.country = "US"
+    number.features = ""
     number.save()
 
     event = db.Event()

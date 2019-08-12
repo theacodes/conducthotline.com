@@ -45,6 +45,7 @@ def create_event():
     number = db.Number()
     number.number = "5678"
     number.country = "US"
+    number.features = ""
     number.save()
 
     event = db.Event()
@@ -108,12 +109,14 @@ def create_relays():
     number = db.Number()
     number.number = "1111"
     number.country = "US"
+    number.features = ""
     number.pool = db.NumberPool.SMS_RELAY
     number.save()
 
     number = db.Number()
     number.number = "2222"
     number.country = "US"
+    number.features = ""
     number.pool = db.NumberPool.SMS_RELAY
     number.save()
 

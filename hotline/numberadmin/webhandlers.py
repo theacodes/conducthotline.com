@@ -32,6 +32,7 @@ def list():
         models.Number.number,
         models.Number.country,
         models.Number.pool,
+        models.Number.features,
         models.Event.name,
         models.Event.slug,
     ).join(
@@ -70,19 +71,25 @@ def details(number):
     )
 
 
-@blueprint.route("/admin/numbers/rent")
+@blueprint.route("/admin/numbers/rent", methods=["POST"])
 @super_admin_required
 def rent():
-    number = hotline.telephony.lowlevel.rent_number(
-        sms_callback_url=flask.url_for("telephony.inbound_sms", _external=True)
-    )
-
     pool = models.NumberPool(int(flask.request.values["pool"]))
+    country = flask.request.values["country"]
 
+    if not country:
+        return flask.abort(400, "Missing country.")
+
+    number = hotline.telephony.lowlevel.rent_number(
+        country_code=country,
+        sms_callback_url=flask.url_for("telephony.inbound_sms",
+        _external=True)
+    )
     number_record = models.Number()
     number_record.number = number["msisdn"]
     number_record.country = number["country"]
     number_record.pool = pool
+    number_record.features = ','.join(number.get("features", []))
     number_record.save()
 
     return flask.redirect(flask.url_for(".list"))

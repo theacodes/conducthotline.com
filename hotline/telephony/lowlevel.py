@@ -22,9 +22,21 @@ from google.api_core import retry
 from hotline import injector
 
 
-def normalize_number(value: str) -> str:
-    number = phonenumbers.parse(value, "US")
+def normalize_number(value: str, country: str = "US") -> str:
+    number = phonenumbers.parse(value, country)
     return phonenumbers.format_number(number, phonenumbers.PhoneNumberFormat.E164)
+
+
+def normalize_e164_number(value: str) -> str:
+    # Nexmo sends numbers back in e164 format but without the leading +, so adding
+    # that should make the parser work regardless of the default country code.
+    number = phonenumbers.parse("+" + value, "US")
+    return phonenumbers.format_number(number, phonenumbers.PhoneNumberFormat.E164)
+
+
+def pretty_print_number(number: str, country: str = "US") -> str:
+    parsed = phonenumbers.parse(value, "US")
+    return phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
 
 
 @injector.provides(
@@ -68,13 +80,21 @@ def rent_number(
 
     NOTE: This immediately charges us for the number (for at least a month).
     """
+
+    # Try to get SMS and VOICE numbers first.
     numbers = client.get_available_numbers(
         country_code, {"features": "SMS,VOICE", "type": "mobile-lvn"}
     )
 
+    # If that fails, get a VOICE-only number.
+    if not numbers.get("numbers", []):
+        numbers = client.get_available_numbers(
+            country_code, {"features": "VOICE", "type": "mobile-lvn"}
+        )
+
     error = RuntimeError("No numbers available.")
 
-    for number in numbers["numbers"]:
+    for number in numbers.get("numbers", []):
         try:
             client.buy_number(
                 {"country": number["country"], "msisdn": number["msisdn"]}
@@ -87,8 +107,8 @@ def rent_number(
                 client=client,
             )
 
-            # Normalize the number.
-            number["msisdn"] = normalize_number(number["msisdn"])
+            # normalize the number. Nexmo sends it back in E164 format *without* the leading +
+            number["msisdn"] = normalize_e164_number(number["msisdn"])
 
             return number
 

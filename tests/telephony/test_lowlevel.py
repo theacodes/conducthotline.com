@@ -20,23 +20,31 @@ import pytest
 from hotline.telephony import lowlevel
 
 
-def test_rent_number():
+@pytest.mark.parametrize(
+    ["country", "expected"], [
+        (None, "11234567890"),
+        ("US", "11234567890"),
+        ("GB", "441234567890")
+    ]
+)
+def test_rent_number(country, expected):
     client = mock.create_autospec(nexmo.Client)
     client.application_id = "appid"
 
     client.get_available_numbers.return_value = {
         "numbers": [
-            {"country": "US", "msisdn": "123456789"},
-            {"country": "US", "msisdn": "987654321"},
+            # Should always grab the first one.
+            {"country": country, "msisdn": expected},
+            {"country": "US", "msisdn": "19876543210"},
         ]
     }
 
-    result = lowlevel.rent_number(sms_callback_url="example.com/sms", client=client)
+    result = lowlevel.rent_number(sms_callback_url="example.com/sms", country_code=country, client=client)
 
-    assert result == {"country": "US", "msisdn": "+1123456789"}
+    assert result == {"country": country, "msisdn": f"+{expected}"}
 
-    client.get_available_numbers.assert_called_once()
-    client.buy_number.assert_called_once_with({"country": "US", "msisdn": "123456789"})
+    client.get_available_numbers.assert_called_once_with(country, mock.ANY)
+    client.buy_number.assert_called_once_with({"country": country, "msisdn": expected})
 
 
 def test_rent_number_none_available():

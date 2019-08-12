@@ -27,6 +27,10 @@ class EventEditForm(wtforms.Form):
         description="Used to generate a URL for your event. For example, https://conducthotline/e/pycascades.",
         validators=[wtforms.validators.InputRequired()],
     )
+    country = wtforms.StringField(
+        "Country",
+        description="The two-letter country code in ISO 3166-1 alpha-2. For example, US or GB. Do *not* change once the event is created."
+    )
     coc_link = wtforms.StringField(
         description="Displayed on the public view for your event. Should be a full URL, including https://."
     )
@@ -67,7 +71,8 @@ def validate_phone_number(form, field):
 class AddMemberForm(wtforms.Form):
     name = wtforms.StringField("Name", validators=[wtforms.validators.InputRequired()])
     number = wtforms.StringField(
-        "Number", validators=[wtforms.validators.InputRequired(), validate_phone_number]
+        "Number", validators=[wtforms.validators.InputRequired(), validate_phone_number],
+        description="For non-US numbers, please include the calling prefix, for example <code>+52 81 4445 0550</code>."
     )
 
 

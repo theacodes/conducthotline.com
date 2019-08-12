@@ -51,6 +51,7 @@ class Number(BaseModel):
     number = peewee.TextField()
     country = peewee.CharField(default="US")
     pool = peewee.IntegerField(default=NumberPool.EVENT)
+    features = peewee.TextField(index=False)
 
 
 Number.add_index(Number.number)
@@ -65,6 +66,7 @@ class Event(BaseModel):
     # Stored as destructured as well to speed things up a little.
     primary_number = peewee.TextField(null=True)
     primary_number_id = peewee.ForeignKeyField(Number, null=True)
+    country = peewee.CharField(default="US")
 
     # Information fields.
     coc_link = peewee.TextField(null=True, index=False)

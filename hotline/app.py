@@ -137,17 +137,18 @@ def reset_database():
 
 @app.cli.command()
 @click.argument("number")
+@click.argument("country")
 @click.argument("sms_callback_url")
-def manual_add_number(number, sms_callback_url):
+def manual_add_number(number, country, sms_callback_url):
     import hotline.telephony.lowlevel
     from hotline.database import models
 
-    hotline.telephony.lowlevel.setup_number(number, "US", sms_callback_url)
+    hotline.telephony.lowlevel.setup_number(number, country, sms_callback_url)
 
     with models.db:
         number_entry = models.Number()
-        number_entry.number = hotline.telephony.lowlevel.normalize_number(number)
-        number_entry.country = "US"
+        number_entry.number = number
+        number_entry.country = country
         number_entry.save()
 
 

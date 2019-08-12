@@ -164,7 +164,7 @@ def find_pending_member_by_number(member_number) -> Optional[models.EventMember]
         return None
 
 
-def find_unused_event_numbers() -> List[models.Number]:
+def find_unused_event_numbers(country: str) -> List[models.Number]:
     return list(
         models.Number.select()
         .join(
@@ -174,13 +174,14 @@ def find_unused_event_numbers() -> List[models.Number]:
         )
         .where(models.Event.primary_number_id.is_null())
         .where(models.Number.pool == models.NumberPool.EVENT)
+        .where(models.Number.country == country)
         .limit(5)
     )
 
 
 def acquire_number(event: models.Event) -> str:
     with models.db.atomic():
-        numbers = find_unused_event_numbers()
+        numbers = find_unused_event_numbers(event.country)
 
         # TODO: Check for no available numbers
         number = numbers[0]

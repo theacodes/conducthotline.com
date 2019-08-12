@@ -10,6 +10,7 @@
       <th>Country</th>
       <th>Event</th>
       <th>Pool</th>
+      <th>Features</th>
       <th></th>
     </tr>
   </thead>
@@ -28,6 +29,9 @@
       <td>
         {{NumberPool(number.pool).name.replace("_", " ")|title}}
       </td>
+      <td>
+        {{number.features}}
+      </td>
       <td class="has-text-right">
         <a class="button is-primary" href="{{url_for('.details', number=number.number)}}">Details</a>
       </td>
@@ -37,7 +41,20 @@
 </table>
 
 <div class="container">
-  <a class="button is-primary" href="{{url_for('.rent', pool=NumberPool.EVENT.value)}}">Rent new event number</a>
-  <a class="button is-primary" href="{{url_for('.rent', pool=NumberPool.SMS_RELAY.value)}}">Rent new sms relay number</a>
+  <form method="post" action="{{url_for('.rent')}}">
+    {{csrf_field()}}
+    <div class="field">
+      <label class="label" for="country">Country</label>
+      <input class="input" type="text" name="country" required/>
+    </div>
+    <div class="field is-grouped">
+      <div class="control">
+        <button type="submit" name="pool" value="{{NumberPool.EVENT.value}}" class="button is-primary">Rent new event number</button>
+      </div>
+      <div class="control">
+        <button type="submit" name="pool" value="{{NumberPool.SMS_RELAY.value}}" class="button is-link">Rent new SMS relay number</button>
+      </div>
+    </div>
+  </form>
 </div>
 {% endblock %}

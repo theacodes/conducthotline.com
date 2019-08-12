@@ -26,8 +26,8 @@ hotline.database.ext.init_app(blueprint)
 @blueprint.route("/telephony/inbound-sms", methods=["POST"])
 def inbound_sms():
     message = flask.request.get_json()
-    user_number = lowlevel.normalize_number(message["msisdn"])
-    relay_number = lowlevel.normalize_number(message["to"])
+    user_number = lowlevel.normalize_e164_number(message["msisdn"])
+    relay_number = lowlevel.normalize_e164_number(message["to"])
     message_text = message["text"]
 
     # Maybe handle verification, if this is a response to a verification message.
@@ -51,8 +51,8 @@ HOLD_MUSIC = "https://assets.ctfassets.net/j7pfe8y48ry3/530pLnJVZmiUu8mkEgIMm2/d
 @injector.needs("nexmo.client")
 def inbound_call(client):
     call = flask.request.get_json()
-    event_number = lowlevel.normalize_number(call["to"])
-    reporter_number = lowlevel.normalize_number(call["from"])
+    event_number = lowlevel.normalize_e164_number(call["to"])
+    reporter_number = lowlevel.normalize_e164_number(call["from"])
     conversation_uuid = call["conversation_uuid"]
     call_uuid = call["uuid"]
 
@@ -75,8 +75,8 @@ def inbound_call(client):
 @injector.needs("nexmo.client")
 def connect_to_conference(origin_conversation_uuid, origin_call_uuid, client):
     call = flask.request.get_json()
-    member_number = lowlevel.normalize_number(call["to"])
-    event_number = lowlevel.normalize_number(call["from"])
+    member_number = lowlevel.normalize_e164_number(call["to"])
+    event_number = lowlevel.normalize_e164_number(call["from"])
 
     ncco = voice.handle_member_answer(
         event_number=event_number,
