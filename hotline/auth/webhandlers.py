@@ -27,6 +27,13 @@ _COOKIE_NAME = "auth-session"
 blueprint = flask.Blueprint("auth", __name__, template_folder="templates")
 
 
+@injector.needs("secrets.firebase")
+def _is_development_auth(firebase):
+    if firebase.get("development_mode", False):
+        return True
+    return False
+
+
 @injector.provides(needs=["secrets.firebase.service_account"])
 def firebase_admin_app(service_account):
     try:
@@ -41,6 +48,15 @@ def firebase_admin_app(service_account):
 def auth_required(f):
     @functools.wraps(f)
     def auth_required_view(*args, **kwargs):
+        if _is_development_auth():
+            flask.g.user = {
+                "user_id": "dev",
+                "name": "Developer",
+                "email": "developer@conducthotline.com",
+                "picture": None
+            }
+            return f(*args, **kwargs)
+
         firebase_admin_app = injector.get("firebase_admin_app")
         session_cookie = flask.request.cookies.get(_COOKIE_NAME)
 
@@ -65,6 +81,9 @@ def super_admin_required(f):
     @functools.wraps(f)
     @auth_required
     def super_admin_required_view(*args, **kwargs):
+        if _is_development_auth():
+            return f(*args, **kwargs)
+
         super_admins = injector.get("secrets.super_admins")
         if flask.g.user["user_id"] not in super_admins:
             flask.abort(403)

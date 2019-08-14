@@ -16,6 +16,8 @@ import os
 
 import nox
 
+nox.options.sessions = ["format", "lint", "test"]
+
 
 @nox.session(python="3.7")
 def freeze(session):
