@@ -57,7 +57,7 @@ flask_talisman.Talisman(
             "*.googleusercontent.com",
         ],
         "connect-src": ["'self'", "www.googleapis.com"],
-        "frame-src": ["https://conducthotline-fb.firebaseapp.com/"],
+        "frame-src": ["https://*.firebaseapp.com/"],
     },
 )
 
