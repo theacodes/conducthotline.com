@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import peewee
-
 from hotline.database import models
 
 

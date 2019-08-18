@@ -19,5 +19,5 @@ def migrate(migrator):
     return [
         migrator.add_column(
             "number", "features", peewee.TextField(default="SMS,VOICE", index=False)
-        ),
+        )
     ]

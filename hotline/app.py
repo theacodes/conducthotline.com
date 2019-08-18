@@ -15,17 +15,17 @@
 import importlib
 
 import click
+
 import flask
 import flask_talisman
-import jinja2
-import phonenumbers
-
 import hotline.auth.webhandlers
 import hotline.csrf
 import hotline.events.webhandlers
 import hotline.numberadmin.webhandlers
 import hotline.pages.webhandlers
 import hotline.telephony.webhandlers
+import jinja2
+import phonenumbers
 
 app = flask.Flask(__name__)
 hotline.csrf.init_app(app)

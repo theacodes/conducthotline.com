@@ -16,16 +16,12 @@ from unittest import mock
 
 import nexmo
 import pytest
-
 from hotline.telephony import lowlevel
 
 
 @pytest.mark.parametrize(
-    ["country", "expected"], [
-        (None, "11234567890"),
-        ("US", "11234567890"),
-        ("GB", "441234567890")
-    ]
+    ["country", "expected"],
+    [(None, "11234567890"), ("US", "11234567890"), ("GB", "441234567890")],
 )
 def test_rent_number(country, expected):
     client = mock.create_autospec(nexmo.Client)
@@ -39,7 +35,9 @@ def test_rent_number(country, expected):
         ]
     }
 
-    result = lowlevel.rent_number(sms_callback_url="example.com/sms", country_code=country, client=client)
+    result = lowlevel.rent_number(
+        sms_callback_url="example.com/sms", country_code=country, client=client
+    )
 
     assert result == {"country": country, "msisdn": f"+{expected}"}
 

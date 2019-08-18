@@ -16,7 +16,6 @@ from unittest import mock
 
 import nexmo
 import pytest
-
 from hotline.database import create_tables, highlevel
 from hotline.database import models as db
 from hotline.telephony import voice

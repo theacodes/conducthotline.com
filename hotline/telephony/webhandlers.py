@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import flask
-
 import hotline.database.ext
 from hotline import csrf, injector
 from hotline.telephony import lowlevel, smschat, verification, voice

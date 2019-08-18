@@ -17,7 +17,6 @@ sending messages."""
 
 import nexmo
 import phonenumbers
-
 from google.api_core import retry
 from hotline import injector
 
@@ -35,8 +34,10 @@ def normalize_e164_number(value: str) -> str:
 
 
 def pretty_print_number(number: str, country: str = "US") -> str:
-    parsed = phonenumbers.parse(value, "US")
-    return phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+    parsed = phonenumbers.parse(number, "US")
+    return phonenumbers.format_number(
+        parsed, phonenumbers.PhoneNumberFormat.INTERNATIONAL
+    )
 
 
 @injector.provides(

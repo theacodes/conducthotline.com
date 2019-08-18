@@ -19,7 +19,6 @@ import firebase_admin
 import firebase_admin.auth
 import firebase_admin.credentials
 import flask
-
 from hotline import injector
 
 _COOKIE_NAME = "auth-session"
@@ -53,7 +52,7 @@ def auth_required(f):
                 "user_id": "dev",
                 "name": "Developer",
                 "email": "developer@conducthotline.com",
-                "picture": None
+                "picture": None,
             }
             return f(*args, **kwargs)
 

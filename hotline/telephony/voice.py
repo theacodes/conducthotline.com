@@ -21,7 +21,6 @@ Calling a hotline connects the caller to all of the verified event members.
 from typing import List
 
 import nexmo
-
 from hotline import audit_log, common_text, injector
 from hotline.database import highlevel as db
 

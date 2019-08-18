@@ -13,10 +13,9 @@
 # limitations under the License.
 
 import flask
-import peewee
-
 import hotline.database.ext
 import hotline.telephony.lowlevel
+import peewee
 from hotline.auth import super_admin_required
 from hotline.database import highlevel as db
 from hotline.database import models
@@ -82,14 +81,13 @@ def rent():
 
     number = hotline.telephony.lowlevel.rent_number(
         country_code=country,
-        sms_callback_url=flask.url_for("telephony.inbound_sms",
-        _external=True)
+        sms_callback_url=flask.url_for("telephony.inbound_sms", _external=True),
     )
     number_record = models.Number()
     number_record.number = number["msisdn"]
     number_record.country = number["country"]
     number_record.pool = pool
-    number_record.features = ','.join(number.get("features", []))
+    number_record.features = ",".join(number.get("features", []))
     number_record.save()
 
     return flask.redirect(flask.url_for(".list"))

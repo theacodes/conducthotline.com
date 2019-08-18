@@ -16,8 +16,4 @@ import peewee
 
 
 def migrate(migrator):
-    return [
-        migrator.add_column(
-            "event", "country", peewee.TextField(default="US")
-        ),
-    ]
+    return [migrator.add_column("event", "country", peewee.TextField(default="US"))]

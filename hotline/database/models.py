@@ -18,9 +18,8 @@ stuff into the higher-level interface."""
 import datetime
 import enum
 
-import peewee
-
 import hotline.chatroom
+import peewee
 
 db = peewee.Proxy()
 

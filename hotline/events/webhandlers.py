@@ -15,7 +15,6 @@
 import functools
 
 import flask
-
 import hotline.database.ext
 import hotline.telephony.verification
 from hotline import audit_log
