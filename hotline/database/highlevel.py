@@ -209,6 +209,7 @@ def get_unused_relay_numbers_for_event(
     unused_number_query = (
         models.Number.select(models.Number.number)
         .where(models.Number.pool == models.NumberPool.SMS_RELAY)
+        .where(models.Number.country == event.country)
         .where(models.Number.number.not_in(used_relay_numbers))
         .limit(limit)
     )
