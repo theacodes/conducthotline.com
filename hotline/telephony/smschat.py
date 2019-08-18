@@ -19,6 +19,8 @@ chat room. This is further tailored specifically to the conduct hotline by
 initiating a *new* chatroom when a reporter messages an event's number.
 """
 
+import logging
+
 import hotline.chatroom
 from hotline import audit_log, common_text
 from hotline.database import highlevel as db
@@ -128,12 +130,21 @@ def _find_room(user_number: str, relay_number: str) -> hotline.chatroom.Chatroom
         return _create_room(relay_number, user_number)
 
 
+def _send_sms_no_fail(*args, **kwargs):
+    """Sends an SMS but does not raise an exception if an error occurs,
+    instead, it just logs the exception."""
+    try:
+        hotline.telephony.lowlevel.send_sms(*args, **kwargs)
+    except nexmo.ClientError:
+        logging.exception("Failed to send message for SMS relay.")
+
+
 def handle_message(sender: str, relay: str, message: str):
     """Handles an incoming SMS and hands it off to the appropriate room."""
 
     room = _find_room(user_number=sender, relay_number=relay)
 
-    room.relay(sender, message, hotline.telephony.lowlevel.send_sms)
+    room.relay(sender, message, _send_sms_no_fail)
 
 
 def handle_sms_chat_error(err: SmsChatError, sender: str, relay: str):
