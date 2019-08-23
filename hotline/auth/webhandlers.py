@@ -53,6 +53,7 @@ def auth_required(f):
                 "name": "Developer",
                 "email": "developer@conducthotline.com",
                 "picture": None,
+                "super_admin": True,
             }
             return f(*args, **kwargs)
 
@@ -63,7 +64,6 @@ def auth_required(f):
             decoded_claims = firebase_admin.auth.verify_session_cookie(
                 session_cookie, check_revoked=True, app=firebase_admin_app
             )
-            flask.g.user = decoded_claims
         except ValueError as exc:
             # Session cookie is unavailable or invalid. Force user to login.
             return flask.redirect(flask.url_for("auth.login", next=flask.request.path))
@@ -71,6 +71,9 @@ def auth_required(f):
             # Session revoked. Force user to login.
             return flask.redirect(flask.url_for("auth.login", next=flask.request.path))
 
+        flask.g.user = decoded_claims
+        super_admins = injector.get("secrets.super_admins")
+        flask.g.user["super_admin"] = flask.g.user["user_id"] in super_admins
         return f(*args, **kwargs)
 
     return auth_required_view
@@ -80,11 +83,7 @@ def super_admin_required(f):
     @functools.wraps(f)
     @auth_required
     def super_admin_required_view(*args, **kwargs):
-        if _is_development_auth():
-            return f(*args, **kwargs)
-
-        super_admins = injector.get("secrets.super_admins")
-        if flask.g.user["user_id"] not in super_admins:
+        if not flask.g.user.get("super_admin"):
             flask.abort(403)
 
         return f(*args, **kwargs)

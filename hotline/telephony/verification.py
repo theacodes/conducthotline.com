@@ -37,7 +37,7 @@ def start_member_verification(member):
     lowlevel.send_sms(sender, member.number, message)
 
 
-def maybe_handle_verification(member_number: str, message: str):
+def maybe_handle_verification(member_number: str, message: str, manual: bool = False):
     """Checks if the message is a verification message for the given number."""
     pending_member_record = db.find_pending_member_by_number(member_number)
 
@@ -52,16 +52,27 @@ def maybe_handle_verification(member_number: str, message: str):
     pending_member_record.verified = True
     pending_member_record.save()
 
-    sender = _get_sender_for_member(pending_member_record)
-
-    reply = "Thank you, your number is confirmed."
-
-    lowlevel.send_sms(sender, member_number, reply)
-
     audit_log.log(
         audit_log.Kind.MEMBER_NUMBER_VERIFIED,
         description=f"{pending_member_record.name} verified their number.",
         event=pending_member_record.event,
+    )
+
+    sender = _get_sender_for_member(pending_member_record)
+    reply = "Thank you, your number is confirmed."
+    lowlevel.send_sms(sender, member_number, reply)
+
+    return True
+
+
+def manually_verify(member):
+    member.verified = True
+    member.save()
+
+    audit_log.log(
+        audit_log.Kind.MEMBER_NUMBER_VERIFIED,
+        description=f"An admin manually verified {member.name}'s number.",
+        event=member.event,
     )
 
     return True

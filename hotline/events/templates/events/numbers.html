@@ -68,6 +68,9 @@
           <td>{{member.number|e|phone}}</td>
           <th>{{member.verified}}</th>
           <th class="has-text-right">
+            {% if g.user.super_admin and not member.verified %}
+              <a class="button is-warning" href="{{url_for('.verify_member', event_slug=event.slug, member_id=member.id)}}">Manually Verify</a>
+            {% endif %}
             <a class="button is-danger" href="{{url_for('.remove_member', event_slug=event.slug, member_id=member.id)}}">Remove</a>
           </th>
         </tr>

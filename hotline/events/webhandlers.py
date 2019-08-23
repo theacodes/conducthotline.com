@@ -154,6 +154,17 @@ def remove_member(member_id, event, user):
     return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
 
 
+@blueprint.route("/manage/events/<event_slug>/members/verify/<member_id>")
+@super_admin_required
+@event_access_required
+def verify_member(member_id, event, user):
+    member = db.get_member(member_id)
+
+    hotline.telephony.verification.manually_verify(member)
+
+    return flask.redirect(flask.url_for(".numbers", event_slug=event.slug))
+
+
 @blueprint.route("/manage/events/<event_slug>/organizers", methods=["GET", "POST"])
 @event_access_required
 def organizers(event, user):
