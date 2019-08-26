@@ -51,7 +51,7 @@ class NoRelaysAvailable(SmsChatError):
 def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Chatroom:
     """Creates a room for the event with the given primary number.
 
-    The alogrithm is a little tricky here. The event organizers can not use
+    The algorithm is a little tricky here. The event organizers can not use
     the primary number as the chat relay for this chat, so a new number must be
     used.
     """
