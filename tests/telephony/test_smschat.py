@@ -31,24 +31,32 @@ def database(tmpdir):
         yield db
 
 
+reporter_number = "1234"
+reporter_name = "Reporter"
+
+
 @mock.patch("hotline.telephony.lowlevel.send_sms", autospec=True)
 def test_handle_message_no_event(send_sms, database):
 
     with pytest.raises(smschat.EventDoesNotExist):
-        smschat.handle_message("1234", "5678", "Hello")
+        smschat.handle_message(reporter_number, event_number, "Hello")
 
     send_sms.assert_not_called()
 
 
+event_number = "5678"
+event_name = "Test event"
+
+
 def create_event():
     number = db.Number()
-    number.number = "5678"
+    number.number = event_number
     number.country = "US"
     number.features = ""
     number.save()
 
     event = db.Event()
-    event.name = "Test event"
+    event.name = event_name
     event.slug = "test"
     event.owner_user_id = "abc123"
     event.primary_number = number.number
@@ -63,28 +71,34 @@ def test_handle_message_no_organizers(send_sms, database):
     create_event()
 
     with pytest.raises(smschat.NoOrganizersAvailable):
-        smschat.handle_message("1234", "5678", "Hello")
+        smschat.handle_message(reporter_number, event_number, "Hello")
 
     send_sms.assert_not_called()
 
 
+bob_organizer_name = "Bob"
+bob_organizer_number = "101"
+alice_organizer_name = "Alice"
+alice_organizer_number = "202"
+
+
 def create_organizers(event):
     member = db.EventMember()
-    member.name = "Bob"
-    member.number = "101"
+    member.name = bob_organizer_name
+    member.number = bob_organizer_number
     member.event = event
     member.verified = True
     member.save()
 
     member = db.EventMember()
-    member.name = "Alice"
-    member.number = "202"
+    member.name = alice_organizer_name
+    member.number = alice_organizer_number
     member.event = event
     member.verified = True
     member.save()
 
     member = db.EventMember()
-    member.name = "Unverified Judy"
+    member.name = "Judy"
     member.number = "303"
     member.event = event
     member.verified = False
@@ -99,14 +113,17 @@ def test_handle_message_no_relays(send_sms, database):
     create_organizers(event)
 
     with pytest.raises(smschat.NoRelaysAvailable):
-        smschat.handle_message("1234", "5678", "Hello")
+        smschat.handle_message(reporter_number, event_number, "Hello")
 
     send_sms.assert_not_called()
 
 
+relay_number = "1111"
+
+
 def create_relays():
     number = db.Number()
-    number.number = "1111"
+    number.number = relay_number
     number.country = "US"
     number.features = ""
     number.pool = db.NumberPool.SMS_RELAY
@@ -128,7 +145,7 @@ def test_handle_message_new_chat(send_sms, database):
     create_organizers(event)
     create_relays()
 
-    smschat.handle_message("1234", "5678", "Hello")
+    smschat.handle_message(reporter_number, event_number, "Hello")
 
     # A total of 5 messages:
     # The first should acknolwege the reporter.
@@ -139,23 +156,23 @@ def test_handle_message_new_chat(send_sms, database):
     send_sms.assert_has_calls(
         [
             mock.call(
-                sender="5678",
-                to="1234",
-                message="You have started a new chat with the organizers of Test event.",
+                sender=event_number,
+                to=reporter_number,
+                message=f"You have started a new chat with the organizers of {event_name}.",
             ),
             # The sender should be the *first available* relay number (1111)
             mock.call(
-                sender="1111",
-                to="101",
-                message="This is the beginning of a new chat for Test event, the last 4 digits of the reporter's number are 1234.",
+                sender=relay_number,
+                to=bob_organizer_number,
+                message=f"This is the beginning of a new chat for {event_name}, the last 4 digits of the reporter's number are {reporter_number}.",
             ),
             mock.call(
-                sender="1111",
-                to="202",
-                message="This is the beginning of a new chat for Test event, the last 4 digits of the reporter's number are 1234.",
+                sender=relay_number,
+                to=alice_organizer_number,
+                message=f"This is the beginning of a new chat for {event_name}, the last 4 digits of the reporter's number are {reporter_number}.",
             ),
-            mock.call(sender="1111", to="101", message="Reporter: Hello"),
-            mock.call(sender="1111", to="202", message="Reporter: Hello"),
+            mock.call(sender=relay_number, to=bob_organizer_number, message=f"{reporter_name}: Hello"),
+            mock.call(sender=relay_number, to=alice_organizer_number, message=f"{reporter_name}: Hello"),
         ]
     )
 
@@ -171,15 +188,15 @@ def test_handle_message_new_chat(send_sms, database):
         .order_by(db.SmsChatConnection.user_number)
     )
     assert len(connections) == 3
-    assert connections[0].user_name == "Bob"
-    assert connections[0].user_number == "101"
-    assert connections[0].relay_number == "1111"
-    assert connections[1].user_name == "Reporter"
-    assert connections[1].user_number == "1234"
-    assert connections[1].relay_number == "5678"
-    assert connections[2].user_name == "Alice"
-    assert connections[2].user_number == "202"
-    assert connections[2].relay_number == "1111"
+    assert connections[0].user_name == bob_organizer_name
+    assert connections[0].user_number == bob_organizer_number
+    assert connections[0].relay_number == relay_number
+    assert connections[1].user_name == reporter_name
+    assert connections[1].user_number == reporter_number
+    assert connections[1].relay_number == event_number
+    assert connections[2].user_name == alice_organizer_name
+    assert connections[2].user_number == alice_organizer_number
+    assert connections[2].relay_number == relay_number
 
 
 @mock.patch("hotline.telephony.lowlevel.send_sms", autospec=True)
@@ -189,13 +206,13 @@ def test_handle_message_reply(send_sms, database):
     create_relays()
 
     # Send initial message to establish the chat.
-    smschat.handle_message("1234", "5678", "Hello")
+    smschat.handle_message(reporter_number, event_number, "Hello")
 
     # Reset the mock for send_sms
     send_sms.reset_mock()
 
     # Send a reply from one of the organizers.
-    smschat.handle_message("101", "1111", "Goodbye")
+    smschat.handle_message(bob_organizer_number, relay_number, "Goodbye")
 
     # Two messages should have been sent. One to the reporter, and one to the
     # other verified member.
@@ -204,8 +221,8 @@ def test_handle_message_reply(send_sms, database):
     assert send_sms.call_count == 2
     send_sms.assert_has_calls(
         [
-            mock.call(sender="5678", to="1234", message="Bob: Goodbye"),
-            mock.call(sender="1111", to="202", message="Bob: Goodbye"),
+            mock.call(sender=event_number, to=reporter_number, message=f"{bob_organizer_name}: Goodbye"),
+            mock.call(sender=relay_number, to=alice_organizer_number, message=f"{bob_organizer_name}: Goodbye"),
         ]
     )
 
@@ -214,9 +231,9 @@ def test_handle_message_reply(send_sms, database):
 def test_handle_sms_chat_error_no_event(send_sms):
     err = smschat.EventDoesNotExist()
 
-    smschat.handle_sms_chat_error(err, "1234", "5678")
+    smschat.handle_sms_chat_error(err, reporter_number, event_number)
 
-    send_sms.assert_called_once_with(sender="5678", to="1234", message=mock.ANY)
+    send_sms.assert_called_once_with(sender=event_number, to=reporter_number, message=mock.ANY)
 
     message = send_sms.mock_calls[0][2]["message"]
 
@@ -227,9 +244,9 @@ def test_handle_sms_chat_error_no_event(send_sms):
 def test_handle_sms_chat_error_no_organizers(send_sms):
     err = smschat.NoOrganizersAvailable()
 
-    smschat.handle_sms_chat_error(err, "1234", "5678")
+    smschat.handle_sms_chat_error(err, reporter_number, event_number)
 
-    send_sms.assert_called_once_with(sender="5678", to="1234", message=mock.ANY)
+    send_sms.assert_called_once_with(sender=event_number, to=reporter_number, message=mock.ANY)
 
     message = send_sms.mock_calls[0][2]["message"]
 
@@ -240,9 +257,9 @@ def test_handle_sms_chat_error_no_organizers(send_sms):
 def test_handle_sms_chat_error_no_relays(send_sms):
     err = smschat.NoRelaysAvailable()
 
-    smschat.handle_sms_chat_error(err, "1234", "5678")
+    smschat.handle_sms_chat_error(err, reporter_number, event_number)
 
-    send_sms.assert_called_once_with(sender="5678", to="1234", message=mock.ANY)
+    send_sms.assert_called_once_with(sender=event_number, to=reporter_number, message=mock.ANY)
 
     message = send_sms.mock_calls[0][2]["message"]
 
