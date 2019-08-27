@@ -118,18 +118,6 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
     return chatroom
 
 
-def _find_room(user_number: str, relay_number: str) -> hotline.chatroom.Chatroom:
-    with models.db.atomic():
-        # Try to find an existing room first.
-        room = db.find_room_by_user_and_relay_numbers(user_number, relay_number)
-
-        if room is not None:
-            return room
-
-        # Create a new room.
-        return _create_room(relay_number, user_number)
-
-
 def _send_sms_no_fail(*args, **kwargs):
     """Sends an SMS but does not raise an exception if an error occurs,
     instead, it just logs the exception."""
@@ -139,12 +127,55 @@ def _send_sms_no_fail(*args, **kwargs):
         logging.exception("Failed to send message for SMS relay.")
 
 
-def handle_message(sender: str, relay: str, message: str):
+def maybe_handle_stop(sender: str, relay: str, message: str, smschat: models.SmsChat) -> bool:
+    """Handle a potential stop request for a given number and SmsChat."""
+    if message.strip().lower() != "stop":
+        return False
+
+    # Notify other chatroom members.
+    room = smschat.room
+    room.relay(sender, common_text.sms_left_chat, _send_sms_no_fail)
+
+    # Remove the sender from the chat room.
+    removed_user = room.remove_user(sender)
+    smschat.save(only=[models.SmsChat.room])
+
+    # Break the chat connection.
+    models.SmsChatConnection.delete().where(
+        models.SmsChatConnection.smschat == smschat,
+        models.SmsChatConnection.user_number == sender,
+        models.SmsChatConnection.relay_number == relay,
+    ).execute()
+
+    audit_log.log(
+        audit_log.Kind.PARTICIPANT_LEFT_CHAT,
+        description=f"{removed_user.name} has left the chat room "
+                    "with relay number""{removed_user.relay}. "
+                    "The last 4 digits of the their number is {removed_user.number[-4:]}",
+        event=smschat.event,
+    )
+
+    # Notify the sender they will no longer get messages.
+    lowlevel.send_sms(sender=relay, to=sender, message=common_text.sms_stop_request_completed)
+
+    return True
+
+
+def handle_message(sender: str, relay: str, message: str) -> None:
     """Handles an incoming SMS and hands it off to the appropriate room."""
 
-    room = _find_room(user_number=sender, relay_number=relay)
+    with models.db.atomic():
+        smschat = db.find_smschat_by_user_and_relay_numbers(user_number=sender, relay_number=relay)
 
-    room.relay(sender, message, _send_sms_no_fail)
+        if smschat:
+            room = smschat.room
+        else:
+            room = _create_room(event_number=relay, reporter_number=sender)
+
+        if maybe_handle_stop(sender=sender, relay=relay, message=message, smschat=smschat):
+            return
+
+        room.relay(sender, message, _send_sms_no_fail)
 
 
 def handle_sms_chat_error(err: SmsChatError, sender: str, relay: str):

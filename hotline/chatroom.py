@@ -46,6 +46,9 @@ class Chatroom:
     def __init__(self):
         self._users = {}
 
+    def remove_user(self, number: str):
+        return self._users.pop(number, None)
+
     def add_user(self, name: str, number: str, relay: str):
         self._users[number] = _User(name=name, number=number, relay=relay)
 

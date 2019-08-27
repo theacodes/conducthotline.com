@@ -34,6 +34,7 @@ class Kind(enum.IntEnum):
     NUMBER_BLOCKED = 12
     NUMBER_UNBLOCKED = 13
     CHAT_DELETED = 14
+    PARTICIPANT_LEFT_CHAT = 15
 
 
 def log(

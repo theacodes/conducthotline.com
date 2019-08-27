@@ -250,17 +250,15 @@ def save_room(
             )
 
 
-def find_room_by_user_and_relay_numbers(
+def find_smschat_by_user_and_relay_numbers(
     user_number: str, relay_number: str
-) -> Optional[hotline.chatroom.Chatroom]:
+) -> Optional[models.SmsChat]:
     try:
         connection = models.SmsChatConnection.get(
             models.SmsChatConnection.user_number == user_number,
             models.SmsChatConnection.relay_number == relay_number,
         )
-
-        # This could be faster with a join, but I'm not terribly worried about speed right now.
-        return connection.smschat.room
+        return connection.smschat
 
     except peewee.DoesNotExist:
         return None
