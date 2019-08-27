@@ -147,6 +147,14 @@ def maybe_handle_stop(sender: str, relay: str, message: str, smschat: models.Sms
         models.SmsChatConnection.relay_number == relay,
     ).execute()
 
+    audit_log.log(
+        audit_log.Kind.PARTICIPANT_LEFT_CHAT,
+        description=f"{removed_user.name} has left the chat room "
+                    "with relay number""{removed_user.relay}. "
+                    "The last 4 digits of the their number is {removed_user.number[-4:]}",
+        event=smschat.event,
+    )
+
     # Notify the sender they will no longer get messages.
     lowlevel.send_sms(sender=relay, to=sender, message=common_text.sms_stop_request_completed)
 
