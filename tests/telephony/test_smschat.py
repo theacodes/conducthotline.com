@@ -131,7 +131,7 @@ def test_handle_message_new_chat(send_sms, database):
     smschat.handle_message("1234", "5678", "Hello")
 
     # A total of 5 messages:
-    # The first should acknolwege the reporter.
+    # The first should acknowledge the reporter.
     # The next two should have been sent to the two verified organizers to
     # introduce the chat.
     # The last two should relay the reporter's message.
