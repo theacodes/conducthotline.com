@@ -106,6 +106,9 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
     # Send welcome messages.
     lowlevel.send_sms(sender=event_number, to=reporter_number, message=greeting)
 
+    # Send instructions for how to opt-out by replying with STOP.
+    lowlevel.send_sms(sender=event_number, to=reporter_number, message=common_text.sms_opt_out)
+
     for organizer in organizers:
         lowlevel.send_sms(
             sender=relay_number,

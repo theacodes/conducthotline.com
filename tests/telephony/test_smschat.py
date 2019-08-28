@@ -150,7 +150,7 @@ def test_handle_message_new_chat(send_sms, database):
     # The next two should have been sent to the two verified organizers to
     # introduce the chat.
     # The last two should relay the reporter's message.
-    assert send_sms.call_count == 5
+    assert send_sms.call_count == 6
     send_sms.assert_has_calls(
         [
             mock.call(
@@ -158,16 +158,24 @@ def test_handle_message_new_chat(send_sms, database):
                 to=REPORTER_NUMBER,
                 message=f"You have started a new chat with the organizers of {EVENT_NAME}.",
             ),
+            # The reporter should get a notice about how to opt out.
+            mock.call(
+                sender=EVENT_NUMBER,
+                to=REPORTER_NUMBER,
+                message="Reply STOP at any time to opt-out of receiving messages from this conversation.",
+            ),
             # The sender should be the *first available* relay number (1111)
             mock.call(
                 sender=RELAY_NUMBER,
                 to=BOB_ORGANIZER_NUMBER,
-                message=f"This is the beginning of a new chat for {EVENT_NAME}, the last 4 digits of the reporter's number are {REPORTER_NUMBER}.",
+                message=f"This is the beginning of a new chat for {EVENT_NAME}, the last 4 digits of the reporter's number are {REPORTER_NUMBER}. "
+                        "Reply STOP at any time to opt-out of receiving messages from this conversation.",
             ),
             mock.call(
                 sender=RELAY_NUMBER,
                 to=ALICE_ORGANIZER_NUMBER,
-                message=f"This is the beginning of a new chat for {EVENT_NAME}, the last 4 digits of the reporter's number are {REPORTER_NUMBER}.",
+                message=f"This is the beginning of a new chat for {EVENT_NAME}, the last 4 digits of the reporter's number are {REPORTER_NUMBER}. "
+                        "Reply STOP at any time to opt-out of receiving messages from this conversation.",
             ),
             mock.call(
                 sender=RELAY_NUMBER,
