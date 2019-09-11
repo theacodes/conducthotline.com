@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 import flask
 import hotline.database.ext
 from hotline import csrf, injector
@@ -25,6 +27,9 @@ hotline.database.ext.init_app(blueprint)
 @blueprint.route("/telephony/inbound-sms", methods=["POST"])
 def inbound_sms():
     message = flask.request.get_json()
+
+    logging.info(f"Handling message from {message['msisdn']} to {message['to']}")
+
     user_number = lowlevel.normalize_e164_number(message["msisdn"])
     relay_number = lowlevel.normalize_e164_number(message["to"])
     message_text = message["text"]

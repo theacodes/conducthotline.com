@@ -33,6 +33,8 @@ def database(tmpdir):
 
 EVENT_NUMBER = "5678"
 EVENT_NAME = "Test event"
+EVENT_NUMBER_2 = "8765"
+EVENT_NAME_2 = "Test event 2"
 REPORTER_NUMBER = "1234"
 REPORTER_NAME = "Reporter"
 
@@ -46,19 +48,19 @@ def test_handle_message_no_event(send_sms, database):
     send_sms.assert_not_called()
 
 
-def create_event():
-    number = db.Number()
-    number.number = EVENT_NUMBER
-    number.country = "US"
-    number.features = ""
-    number.save()
+def create_event(name=EVENT_NAME, number=EVENT_NUMBER):
+    number_ = db.Number()
+    number_.number = number
+    number_.country = "US"
+    number_.features = ""
+    number_.save()
 
     event = db.Event()
-    event.name = EVENT_NAME
-    event.slug = "test"
+    event.name = name
+    event.slug = name
     event.owner_user_id = "abc123"
-    event.primary_number = number.number
-    event.primary_number_id = number
+    event.primary_number = number_.number
+    event.primary_number_id = number_
     event.save()
 
     return event
@@ -117,6 +119,7 @@ def test_handle_message_no_relays(send_sms, database):
 
 
 RELAY_NUMBER = "1111"
+RELAY_NUMBER_2 = "2222"
 
 
 def create_relays():
@@ -128,7 +131,7 @@ def create_relays():
     number.save()
 
     number = db.Number()
-    number.number = "2222"
+    number.number = RELAY_NUMBER_2
     number.country = "US"
     number.features = ""
     number.pool = db.NumberPool.SMS_RELAY
@@ -169,13 +172,13 @@ def test_handle_message_new_chat(send_sms, database):
                 sender=RELAY_NUMBER,
                 to=BOB_ORGANIZER_NUMBER,
                 message=f"This is the beginning of a new chat for {EVENT_NAME}, the last 4 digits of the reporter's number are {REPORTER_NUMBER}. "
-                        "Reply STOP at any time to opt-out of receiving messages from this conversation.",
+                "Reply STOP at any time to opt-out of receiving messages from this conversation.",
             ),
             mock.call(
                 sender=RELAY_NUMBER,
                 to=ALICE_ORGANIZER_NUMBER,
                 message=f"This is the beginning of a new chat for {EVENT_NAME}, the last 4 digits of the reporter's number are {REPORTER_NUMBER}. "
-                        "Reply STOP at any time to opt-out of receiving messages from this conversation.",
+                "Reply STOP at any time to opt-out of receiving messages from this conversation.",
             ),
             mock.call(
                 sender=RELAY_NUMBER,
@@ -213,7 +216,7 @@ def test_handle_message_new_chat(send_sms, database):
     assert connections[2].relay_number == RELAY_NUMBER
 
 
-def create_chatroom(send_sms):
+def create_chatroom(send_sms, number=EVENT_NUMBER):
     # Send initial message to establish the chat.
     smschat.handle_message(REPORTER_NUMBER, EVENT_NUMBER, "Hello")
 
@@ -254,6 +257,33 @@ def test_handle_message_reply(send_sms, database):
 
 
 @mock.patch("hotline.telephony.lowlevel.send_sms", autospec=True)
+def test_organizer_in_two_events(send_sms, database):
+    """Tests the case where an organizer is in two different events.
+
+    This causes issues with a naive relay assignment algorithm that will try to
+    assign a relay used in event one for event two, leading to a database error.
+    The second event should get a unique relay number, and having an organizer in both
+    effectively reduces the available number of relays.
+    """
+    event_one = create_event()
+    event_two = create_event(name=EVENT_NAME_2, number=EVENT_NUMBER_2)
+    create_organizers(event_one)
+    create_organizers(event_two)
+    create_relays()
+
+    smschat.handle_message(REPORTER_NUMBER, EVENT_NUMBER, "Hello")
+
+    senders = set([call[2]["sender"] for call in send_sms.mock_calls])
+    assert senders == set([EVENT_NUMBER, RELAY_NUMBER])
+
+    # This should still work and should assign a different relay than the one above.
+    smschat.handle_message(REPORTER_NUMBER, EVENT_NUMBER_2, "Hello")
+
+    senders = set([call[2]["sender"] for call in send_sms.mock_calls])
+    assert senders == set([EVENT_NUMBER, EVENT_NUMBER_2, RELAY_NUMBER, RELAY_NUMBER_2])
+
+
+@mock.patch("hotline.telephony.lowlevel.send_sms", autospec=True)
 def test_handle_stop_reply(send_sms, database):
     event = create_event()
     create_organizers(event)
@@ -262,9 +292,13 @@ def test_handle_stop_reply(send_sms, database):
 
     # Verify a room currently exists for the reporter, and is deleted after the
     # reporter opts-out by texting stop.
-    assert highlevel.find_smschat_by_user_and_relay_numbers(REPORTER_NUMBER, EVENT_NUMBER)
+    assert highlevel.find_smschat_by_user_and_relay_numbers(
+        REPORTER_NUMBER, EVENT_NUMBER
+    )
     smschat.handle_message(REPORTER_NUMBER, EVENT_NUMBER, "STOP")
-    assert not highlevel.find_smschat_by_user_and_relay_numbers(REPORTER_NUMBER, EVENT_NUMBER)
+    assert not highlevel.find_smschat_by_user_and_relay_numbers(
+        REPORTER_NUMBER, EVENT_NUMBER
+    )
 
     # Three messages should have been sent. One for each of the two organizers,
     # notifying them that the reporter has left the chat, and one to the reporter,
@@ -272,9 +306,21 @@ def test_handle_stop_reply(send_sms, database):
     assert send_sms.call_count == 3
     send_sms.assert_has_calls(
         [
-            mock.call(sender=RELAY_NUMBER, to=BOB_ORGANIZER_NUMBER, message=f"{REPORTER_NAME}: This participant has chosen to leave the chat."),
-            mock.call(sender=RELAY_NUMBER, to=ALICE_ORGANIZER_NUMBER, message=f"{REPORTER_NAME}: This participant has chosen to leave the chat."),
-            mock.call(sender=EVENT_NUMBER, to=REPORTER_NUMBER, message="You've been successfully unsubscribed, you'll no longer receive messages from this number."),
+            mock.call(
+                sender=RELAY_NUMBER,
+                to=BOB_ORGANIZER_NUMBER,
+                message=f"{REPORTER_NAME}: This participant has chosen to leave the chat.",
+            ),
+            mock.call(
+                sender=RELAY_NUMBER,
+                to=ALICE_ORGANIZER_NUMBER,
+                message=f"{REPORTER_NAME}: This participant has chosen to leave the chat.",
+            ),
+            mock.call(
+                sender=EVENT_NUMBER,
+                to=REPORTER_NUMBER,
+                message="You've been successfully unsubscribed, you'll no longer receive messages from this number.",
+            ),
         ]
     )
 
@@ -283,9 +329,13 @@ def test_handle_stop_reply(send_sms, database):
 
     # Verify a room currently exists for this responder, and is deleted after the
     # responder opts-out by texting stop.
-    assert highlevel.find_smschat_by_user_and_relay_numbers(BOB_ORGANIZER_NUMBER, RELAY_NUMBER)
+    assert highlevel.find_smschat_by_user_and_relay_numbers(
+        BOB_ORGANIZER_NUMBER, RELAY_NUMBER
+    )
     smschat.handle_message(BOB_ORGANIZER_NUMBER, RELAY_NUMBER, "Stop")
-    assert not highlevel.find_smschat_by_user_and_relay_numbers(BOB_ORGANIZER_NUMBER, RELAY_NUMBER)
+    assert not highlevel.find_smschat_by_user_and_relay_numbers(
+        BOB_ORGANIZER_NUMBER, RELAY_NUMBER
+    )
 
     # Two messages should have been sent. One to the remaining organizer,
     # notifying them that the Bob has left the chat, and one to Bob,
@@ -293,8 +343,16 @@ def test_handle_stop_reply(send_sms, database):
     assert send_sms.call_count == 2
     send_sms.assert_has_calls(
         [
-            mock.call(sender=RELAY_NUMBER, to=ALICE_ORGANIZER_NUMBER, message=f"{BOB_ORGANIZER_NAME}: This participant has chosen to leave the chat."),
-            mock.call(sender=RELAY_NUMBER, to=BOB_ORGANIZER_NUMBER, message="You've been successfully unsubscribed, you'll no longer receive messages from this number."),
+            mock.call(
+                sender=RELAY_NUMBER,
+                to=ALICE_ORGANIZER_NUMBER,
+                message=f"{BOB_ORGANIZER_NAME}: This participant has chosen to leave the chat.",
+            ),
+            mock.call(
+                sender=RELAY_NUMBER,
+                to=BOB_ORGANIZER_NUMBER,
+                message="You've been successfully unsubscribed, you'll no longer receive messages from this number.",
+            ),
         ]
     )
 
@@ -307,33 +365,53 @@ def test_handle_new_chat_after_stop_reply(send_sms, database):
     create_chatroom(send_sms)
 
     # Verify a room currently exists for the reporter.
-    initial_chat = highlevel.find_smschat_by_user_and_relay_numbers(REPORTER_NUMBER, EVENT_NUMBER)
+    initial_chat = highlevel.find_smschat_by_user_and_relay_numbers(
+        REPORTER_NUMBER, EVENT_NUMBER
+    )
     assert initial_chat
 
     # Verify the room no longer exists after reporter opts-out by texting stop.
     smschat.handle_message(REPORTER_NUMBER, EVENT_NUMBER, "STOP")
-    assert not highlevel.find_smschat_by_user_and_relay_numbers(REPORTER_NUMBER, EVENT_NUMBER)
+    assert not highlevel.find_smschat_by_user_and_relay_numbers(
+        REPORTER_NUMBER, EVENT_NUMBER
+    )
 
     # Send a new message from the reporter to re-establish the chat.
     create_chatroom(send_sms)
 
     # Verify a new room is recreated for the reporter under a new relay number.
-    new_chat = highlevel.find_smschat_by_user_and_relay_numbers(REPORTER_NUMBER, EVENT_NUMBER)
+    new_chat = highlevel.find_smschat_by_user_and_relay_numbers(
+        REPORTER_NUMBER, EVENT_NUMBER
+    )
     assert new_chat
     assert new_chat.id != initial_chat.id
     assert new_chat.relay_number != initial_chat.relay_number
 
     # Opt-out again, verify the room no longer exists.
     smschat.handle_message(REPORTER_NUMBER, EVENT_NUMBER, "STOP")
-    assert not highlevel.find_smschat_by_user_and_relay_numbers(REPORTER_NUMBER, EVENT_NUMBER)
+    assert not highlevel.find_smschat_by_user_and_relay_numbers(
+        REPORTER_NUMBER, EVENT_NUMBER
+    )
 
     # Verify the new relay number was used for the messages.
     assert send_sms.call_count == 3
     send_sms.assert_has_calls(
         [
-            mock.call(sender=new_chat.relay_number, to=BOB_ORGANIZER_NUMBER, message=f"{REPORTER_NAME}: This participant has chosen to leave the chat."),
-            mock.call(sender=new_chat.relay_number, to=ALICE_ORGANIZER_NUMBER, message=f"{REPORTER_NAME}: This participant has chosen to leave the chat."),
-            mock.call(sender=EVENT_NUMBER, to=REPORTER_NUMBER, message="You've been successfully unsubscribed, you'll no longer receive messages from this number."),
+            mock.call(
+                sender=new_chat.relay_number,
+                to=BOB_ORGANIZER_NUMBER,
+                message=f"{REPORTER_NAME}: This participant has chosen to leave the chat.",
+            ),
+            mock.call(
+                sender=new_chat.relay_number,
+                to=ALICE_ORGANIZER_NUMBER,
+                message=f"{REPORTER_NAME}: This participant has chosen to leave the chat.",
+            ),
+            mock.call(
+                sender=EVENT_NUMBER,
+                to=REPORTER_NUMBER,
+                message="You've been successfully unsubscribed, you'll no longer receive messages from this number.",
+            ),
         ]
     )
 

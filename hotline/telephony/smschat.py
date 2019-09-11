@@ -76,7 +76,10 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
         raise NoOrganizersAvailable()
 
     # Find an unused number to use for the organizers' relay.
-    relay_number = db.find_unused_relay_number(event)
+    organizer_numbers = [organizer.number for organizer in organizers]
+    relay_number = db.find_unused_relay_number(
+        event, organizer_numbers=organizer_numbers
+    )
 
     if not relay_number:
         raise NoRelaysAvailable()
@@ -107,7 +110,9 @@ def _create_room(event_number: str, reporter_number: str) -> hotline.chatroom.Ch
     lowlevel.send_sms(sender=event_number, to=reporter_number, message=greeting)
 
     # Send instructions for how to opt-out by replying with STOP.
-    lowlevel.send_sms(sender=event_number, to=reporter_number, message=common_text.sms_opt_out)
+    lowlevel.send_sms(
+        sender=event_number, to=reporter_number, message=common_text.sms_opt_out
+    )
 
     for organizer in organizers:
         lowlevel.send_sms(
@@ -130,7 +135,9 @@ def _send_sms_no_fail(*args, **kwargs):
         logging.exception("Failed to send message for SMS relay.")
 
 
-def maybe_handle_stop(sender: str, relay: str, message: str, smschat: models.SmsChat) -> bool:
+def maybe_handle_stop(
+    sender: str, relay: str, message: str, smschat: models.SmsChat
+) -> bool:
     """Handle a potential stop request for a given number and SmsChat."""
     if message.strip().lower() != "stop":
         return False
@@ -153,13 +160,16 @@ def maybe_handle_stop(sender: str, relay: str, message: str, smschat: models.Sms
     audit_log.log(
         audit_log.Kind.PARTICIPANT_LEFT_CHAT,
         description=f"{removed_user.name} has left the chat room "
-                    "with relay number""{removed_user.relay}. "
-                    "The last 4 digits of the their number is {removed_user.number[-4:]}",
+        "with relay number"
+        "{removed_user.relay}. "
+        "The last 4 digits of the their number is {removed_user.number[-4:]}",
         event=smschat.event,
     )
 
     # Notify the sender they will no longer get messages.
-    lowlevel.send_sms(sender=relay, to=sender, message=common_text.sms_stop_request_completed)
+    lowlevel.send_sms(
+        sender=relay, to=sender, message=common_text.sms_stop_request_completed
+    )
 
     return True
 
@@ -168,15 +178,18 @@ def handle_message(sender: str, relay: str, message: str) -> None:
     """Handles an incoming SMS and hands it off to the appropriate room."""
 
     with models.db.atomic():
-        smschat = db.find_smschat_by_user_and_relay_numbers(user_number=sender, relay_number=relay)
+        smschat = db.find_smschat_by_user_and_relay_numbers(
+            user_number=sender, relay_number=relay
+        )
 
         if smschat:
             room = smschat.room
+            if maybe_handle_stop(
+                sender=sender, relay=relay, message=message, smschat=smschat
+            ):
+                return
         else:
             room = _create_room(event_number=relay, reporter_number=sender)
-
-        if maybe_handle_stop(sender=sender, relay=relay, message=message, smschat=smschat):
-            return
 
         room.relay(sender, message, _send_sms_no_fail)
 

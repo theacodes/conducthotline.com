@@ -27,7 +27,13 @@ sms_no_relays = "Sorry, there aren't any relays available to send your message. 
 sms_default_greeting = (
     "You have started a new chat with the organizers of {event.name}."
 )
-sms_opt_out = "Reply STOP at any time to opt-out of receiving messages from this conversation."
-sms_introduction = "This is the beginning of a new chat for {event.name}, the last 4 digits of the reporter's number are {reporter_number}." + " " + sms_opt_out
+sms_opt_out = (
+    "Reply STOP at any time to opt-out of receiving messages from this conversation."
+)
+sms_introduction = (
+    "This is the beginning of a new chat for {event.name}, the last 4 digits of the reporter's number are {reporter_number}."
+    + " "
+    + sms_opt_out
+)
 sms_stop_request_completed = "You've been successfully unsubscribed, you'll no longer receive messages from this number."
 sms_left_chat = "This participant has chosen to leave the chat."
