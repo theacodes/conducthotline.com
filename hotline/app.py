@@ -103,7 +103,7 @@ def index():
 
 @app.route("/robots.txt")
 def robots():
-    return flask.render_template("robots.txt")
+    return flask.redirect(flask.url_for("static", name="robots.txt"))
 
 
 @app.errorhandler(404)
