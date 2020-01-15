@@ -288,12 +288,12 @@ def remove_event_chat(event: models.Event, chat_id: str, user: dict):
         models.SmsChat.event == event, models.SmsChat.id == int(chat_id)
     )
 
-    item.delete_instance()
-
     # Delete all connections
     models.SmsChatConnection.delete().where(
         models.SmsChatConnection.smschat == item
     ).execute()
+
+    item.delete_instance()
 
     audit_log.log(
         kind=audit_log.Kind.CHAT_DELETED,
