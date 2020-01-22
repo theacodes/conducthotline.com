@@ -72,6 +72,7 @@ def auth_required(f):
             return flask.redirect(flask.url_for("auth.login", next=flask.request.path))
 
         flask.g.user = decoded_claims
+        flask.g.user.setdefault("name", flask.g.user.get("email", "Unknown"))
         super_admins = injector.get("secrets.super_admins")
         flask.g.user["super_admin"] = flask.g.user["user_id"] in super_admins
         return f(*args, **kwargs)
@@ -156,4 +157,5 @@ def logout(firebase_admin_app):
 @auth_required
 def info():
     user = flask.g.user
+    print(flask.g.user)
     return f"{user['name']} ({user['user_id']})"
