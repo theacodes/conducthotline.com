@@ -41,9 +41,9 @@
           //firebase.auth.EmailAuthProvider.PROVIDER_ID,
           //firebase.auth.PhoneAuthProvider.PROVIDER_ID
         ],
-        tosUrl: '/privacy',
+        tosUrl: '/pages/privacy',
         // Privacy policy url/callback.
-        privacyPolicyUrl: '/privacy'
+        privacyPolicyUrl: '/pages/privacy'
       };
 
       // Initialize the FirebaseUI Widget using Firebase.
