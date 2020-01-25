@@ -15,10 +15,14 @@
 """Handles low-level telephony-related actions, such as renting numbers and
 sending messages."""
 
+import time
+
 import nexmo
 import phonenumbers
 from google.api_core import retry
 from hotline import injector
+
+import logging
 
 
 def normalize_number(value: str, country: str = "US") -> str:
@@ -125,6 +129,7 @@ def get_number_info(number: str, client: nexmo.Client) -> dict:
 
 
 def _send_sms_retry_predicate(error):
+    logging.exception("Error during SMS send")
     if isinstance(error, nexmo.ClientError) and "Throughput Rate Exceeded" in str(
         error
     ):
@@ -132,15 +137,20 @@ def _send_sms_retry_predicate(error):
     return False
 
 
-@retry.Retry(predicate=_send_sms_retry_predicate, initial=1.0, deadline=30.0)
+@retry.Retry(predicate=_send_sms_retry_predicate, initial=1.0, maximum=1.0, deadline=30.0)
 @injector.needs("nexmo.client")
 def send_sms(sender: str, to: str, message: str, client: nexmo.Client) -> dict:
     """Sends an SMS.
 
     ``sender`` and ``to`` must be in proper long form.
     """
+    # This has to be removed at some point. Sleep a little to avoid hitting rate limits.
+    time.sleep(0.3)
+
     # Nexmo is apparently picky about + being in the sender.
     sender = sender.strip("+")
+
+    logging.info(f"Sending from {sender} to {to} message length {len(message)}")
 
     resp = client.send_message({"from": sender, "to": to, "text": message})
 
