@@ -1,5 +1,5 @@
 runtime: python37
-entrypoint: gunicorn -b :$PORT hotline.__main__:app
+entrypoint: gunicorn --timeout 600 -b :$PORT hotline.__main__:app
 
 env_variables:
   SECRETS_FILE: "secrets.prod.json"
