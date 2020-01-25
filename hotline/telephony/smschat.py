@@ -26,6 +26,7 @@ from hotline import audit_log, common_text
 from hotline.database import highlevel as db
 from hotline.database import models
 from hotline.telephony import lowlevel
+import nexmo
 
 
 class SmsChatError(Exception):
