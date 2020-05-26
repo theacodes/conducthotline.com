@@ -4,19 +4,19 @@
 #
 #    pip-compile --output-file=requirements.txt requirements.in
 #
-asn1crypto==0.24.0        # via cryptography
+asn1crypto==1.3.0         # via -r requirements.in, cryptography
 cachecontrol==0.12.5      # via firebase-admin
 cachetools==3.1.0         # via google-auth
 certifi==2019.3.9         # via requests
 cffi==1.12.2              # via cmarkgfm, cryptography
 chardet==3.0.4            # via requests
 click==7.0                # via flask
-cmarkgfm==0.4.2
+cmarkgfm==0.4.2           # via -r requirements.in
 cryptography==2.6.1       # via pyjwt
-firebase-admin==2.16.0
-flask-seasurf==0.2.2
-flask-talisman==0.6.0
-flask==1.0.2
+firebase-admin==2.16.0    # via -r requirements.in
+flask-seasurf==0.2.2      # via -r requirements.in
+flask-talisman==0.6.0     # via -r requirements.in
+flask==1.0.2              # via -r requirements.in, flask-seasurf
 google-api-core[grpc]==1.8.1  # via firebase-admin, google-cloud-core, google-cloud-firestore, google-cloud-storage
 google-auth==1.6.3        # via google-api-core
 google-cloud-core==0.29.1  # via google-cloud-firestore, google-cloud-storage
@@ -25,17 +25,17 @@ google-cloud-storage==1.14.0  # via firebase-admin
 google-resumable-media==0.3.2  # via google-cloud-storage
 googleapis-common-protos==1.5.8  # via google-api-core
 grpcio==1.19.0            # via google-api-core
-gunicorn==19.9.0
+gunicorn==19.9.0          # via -r requirements.in
 idna==2.8                 # via requests
 itsdangerous==1.1.0       # via flask
-jinja2==2.10.1
+jinja2==2.10.1            # via -r requirements.in, flask
 markupsafe==1.1.1         # via jinja2
 msgpack==0.6.1            # via cachecontrol
-nexmo==2.3.0
-peewee==3.9.2
-phonenumbers==8.10.7
+nexmo==2.3.0              # via -r requirements.in
+peewee==3.9.2             # via -r requirements.in
+phonenumbers==8.10.7      # via -r requirements.in
 protobuf==3.7.0           # via google-api-core, googleapis-common-protos
-psycopg2-binary==2.7.7
+psycopg2-binary==2.7.7    # via -r requirements.in
 pyasn1-modules==0.2.4     # via google-auth
 pyasn1==0.4.5             # via pyasn1-modules, rsa
 pycparser==2.19           # via cffi
@@ -44,10 +44,10 @@ pytz==2018.9              # via google-api-core, google-cloud-firestore, nexmo
 requests==2.21.0          # via cachecontrol, google-api-core, nexmo
 rsa==4.0                  # via google-auth
 six==1.12.0               # via cryptography, firebase-admin, flask-talisman, google-api-core, google-auth, google-resumable-media, grpcio, protobuf
-typing-extensions==3.7.2
-urllib3==1.24.2
-werkzeug==0.15.5
-wtforms==2.2.1
+typing-extensions==3.7.2  # via -r requirements.in
+urllib3==1.24.2           # via -r requirements.in, requests
+werkzeug==0.15.5          # via -r requirements.in, flask
+wtforms==2.2.1            # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==41.2.0        # via google-api-core, protobuf
+# setuptools
