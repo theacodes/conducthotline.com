@@ -80,12 +80,15 @@ def handle_inbound_call(
         }
     )
 
+    # Nexmo is apparently picky about + being in the from field.
+    from_number = event.primary_number.strip("+")
+
     # Add all of the event members to the conference call.
     for member in event_members:
         client.create_call(
             {
                 "to": [{"type": "phone", "number": member.number}],
-                "from": {"type": "phone", "number": event.primary_number},
+                "from": {"type": "phone", "number": from_number},
                 "answer_url": [
                     f"https://{host}/telephony/connect-to-conference/{conversation_uuid}/{call_uuid}"
                 ],
